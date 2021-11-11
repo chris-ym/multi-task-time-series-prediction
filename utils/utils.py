@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
 
 import numpy as np
 import pandas as pd
@@ -63,10 +61,3 @@ def time_series_trans(pid,date,new_target,features,time_length):
     final_df=pd.DataFrame(total_list,columns=columnnn)
     final_df.to_csv('new_fixed_length_new.csv')
     return final_df
-
-
-# In[ ]:
-
-
-
-
