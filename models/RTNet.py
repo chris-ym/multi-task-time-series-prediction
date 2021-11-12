@@ -20,3 +20,4 @@ if __name__=='__main__':
     seq_len=8
     n_heads=2
     look_ahead_mask = transformer_encoder.create_look_ahead_mask(seq_len)
+    
