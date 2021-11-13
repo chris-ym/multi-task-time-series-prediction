@@ -67,3 +67,7 @@ warm_up_lr = tf_util.WarmUpCosineDecayScheduler(learning_rate_base=learning_rate
                                         warmup_learning_rate=0.0,
                                         warmup_steps=warmup_steps,
                                         hold_base_rate_steps=0)
+# build training model and save
+def train():
+    with tf.Graph().as_default():
+        
