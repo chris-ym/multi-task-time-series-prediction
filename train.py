@@ -17,6 +17,7 @@ import tf_util
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='RTNet', help='Model name: RTNet')
+parser.add_argument('--num_data', type=int, default='10', help='number of balanced data')
 parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
 parser.add_argument('--num_trans_enc', type=int, default=2, help='Number of transformer encoder [default: 2]')
 parser.add_argument('--max_epoch', type=int, default=50, help='Epoch to run [default: 50]')
@@ -67,7 +68,10 @@ warm_up_lr = tf_util.WarmUpCosineDecayScheduler(learning_rate_base=learning_rate
                                         warmup_learning_rate=0.0,
                                         warmup_steps=warmup_steps,
                                         hold_base_rate_steps=0)
+
+
 # build training model and save
 def train():
     with tf.Graph().as_default():
+        for i in range(num_data)
         
