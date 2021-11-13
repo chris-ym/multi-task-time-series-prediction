@@ -33,19 +33,23 @@ def create_model(output_bias=None):
      
     '''Initialize time and transformer layers'''
     time_embedding = te.Time2Vector(seq_len)
-    attn_layer1 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    attn_layer2 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    attn_layer3 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    attn_layer4 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+    #attn_layer1 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+    #attn_layer2 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+    #attn_layer3 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+    #attn_layer4 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+    num_te=[]
+    for i in range(num_trans_enc):
+        num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
     '''Construct model'''
     in_seq = Input(shape=(seq_len, features))
     x2 = time_embedding(in_seq)
     x2 = Concatenate(axis=-1)([in_seq, x2])
-    ###############################3 如何設置不同數量的transformer encoder
-    '''
-    x2 = attn_layer1((x2, x2, x2))    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    x2 = attn_layer2((x2, x2, x2))    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    '''
+    # set different number transformer encoder
+    #x2 = attn_layer1((x2, x2, x2))
+    #x2 = attn_layer2((x2, x2, x2))
+    for i in range(num_trans_enc):
+       x2 = num_te[i]((x2, x2, x2))
+    
     x = Concatenate(axis=-1)([x1, x2])
     x = GlobalAveragePooling1D()(x)
 
