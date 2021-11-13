@@ -41,9 +41,11 @@ def create_model(output_bias=None):
     in_seq = Input(shape=(seq_len, features))
     x2 = time_embedding(in_seq)
     x2 = Concatenate(axis=-1)([in_seq, x2])
-    ### 如何設置不同數量的transformer encoder
-    x2 = attn_layer1((x2, x2, x2))
-    x2 = attn_layer2((x2, x2, x2))
+    ###############################3 如何設置不同數量的transformer encoder
+    '''
+    x2 = attn_layer1((x2, x2, x2))    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    x2 = attn_layer2((x2, x2, x2))    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '''
     x = Concatenate(axis=-1)([x1, x2])
     x = GlobalAveragePooling1D()(x)
 
@@ -56,7 +58,7 @@ def create_model(output_bias=None):
         
     model = Model(inputs=[in_seq, risk_seq], outputs=[out1,out2])
     
-    model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., 10.])
+    model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., loss_weight])
 
     return model
 
