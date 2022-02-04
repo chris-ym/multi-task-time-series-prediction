@@ -14,9 +14,10 @@ from keras import optimizers
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
 
 adam = optimizers.Adam(lr=0.001)
-###
+#################################################################################################
 #### merge all variable and training together
 features=np.array(total_X_train_cb[0]).shape[2]
+#################################################################################################
 
 def create_model(output_bias=None):
 
