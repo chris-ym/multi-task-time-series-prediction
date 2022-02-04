@@ -50,10 +50,10 @@ df=df.drop(['target'],axis=1)
 
 # Number of training samples.
 sample_count = len(train_sample)
-epochs = 50
+epochs = max_epoch
 
 # Number of warmup epochs.
-warmup_epoch = 10
+warmup_epoch = int(0.2*max_epoch)
 
 # Base learning rate after warmup.
 learning_rate_base = 0.001
