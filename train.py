@@ -80,3 +80,6 @@ def train():
         clf.save("ensemble_2SA_eval1_%s_combinemodel_v2_0to10_loss_weight_1of5.h5" % i)
         #for i in range(num_data)
         
+if __name__ == "__main__":
+    train()
+    LOG_FOUT.close()
