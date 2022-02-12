@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, '../utils'))
 sys.path.append(os.path.join(BASE_DIR, '../../utils'))
-import transformer_encoder
+import transformer_encoder as te
 import utils
 from keras import optimizers
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
