@@ -43,6 +43,20 @@ def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
     LOG_FOUT.flush()
     print(out_str)
+    
+#### Import data (different methods)
+############################
+def get_data(data):
+    import os
+    import pickle
+    name, extension = os.path.splitext(path)
+    if extension == ".csv":
+        data=pd.read_csv(".csv")
+    elif extension == ".pkl":
+        f=open("%s.pkl"%data_name,'rb')
+        data=pickle.load(f)
+        f.close()
+    
 
 # next_time_pred pkgs
 old_target=df[['target']]
