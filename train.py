@@ -46,16 +46,19 @@ def log_string(out_str):
     
 #### Import data (different methods)
 ############################
-def get_data(data):
+def get_data(data_name):
     import os
     import pickle
     name, extension = os.path.splitext(path)
     if extension == ".csv":
-        data=pd.read_csv(".csv")
+        data=pd.read_csv("%s.csv"%data_name)
     elif extension == ".pkl":
         f=open("%s.pkl"%data_name,'rb')
         data=pickle.load(f)
         f.close()
+    else:
+        
+    return data
     
 
 # next_time_pred pkgs
