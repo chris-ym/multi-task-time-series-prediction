@@ -27,6 +27,7 @@ parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss wei
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 FLAGS = parser.parse_args()
 
+MODEL = FLAGS.model
 BATCH_SIZE = FLAGS.batch_size
 MAX_EPOCH = FLAGS.max_epoch
 BASE_LEARNING_RATE = FLAGS.learning_rate
@@ -74,6 +75,14 @@ warm_up_lr = tf_util.WarmUpCosineDecayScheduler(learning_rate_base=learning_rate
 def train():
     with tf.Graph().as_default():
         i=0
+        
+        if MODEL == "RTNet":
+            0000
+        elif MODEL == "CTNet":
+            0000
+        else:
+            "Error: Neither RTNet nor CTNet"
+        
         clf=create_model()
         clf.summary()
         history=clf.fit(np.asarray(train_cb),[np.asarray(train_reg),np.asarray(train_lbl)],epochs=max_epoch,batch_size=batch_size,callbacks=[callback], validation_data=(np.asarray(val_cb),[np.asarray(val_reg),np.asarray(val_lbl)])) 
