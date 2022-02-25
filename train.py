@@ -23,6 +23,7 @@ parser.add_argument('--num_trans_enc', type=int, default=2, help='Number of tran
 parser.add_argument('--max_epoch', type=int, default=50, help='Epoch to run [default: 50]')
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size during training [default: 64]')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='Initial learning rate [default: 0.001]')
+parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]') 
 parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss weight [default: 1]')
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 FLAGS = parser.parse_args()
@@ -33,11 +34,38 @@ MAX_EPOCH = FLAGS.max_epoch
 BASE_LEARNING_RATE = FLAGS.learning_rate
 GPU_INDEX = FLAGS.gpu
 LOSS_WEIGHT = FLAGS.loss_weight
+DECAY_STEP = FLAGS.decay_step
 OPTIMIZER = FLAGS.optimizer
 LOG_DIR = FLAGS.log_dir
 
+MODEL = importlib.import_module(FLAGS.model) # import network module
+MODEL_FILE = os.path.join(BASE_DIR, 'models', FLAGS.model+'.py')
+LOG_DIR = FLAGS.log_dir
+if not os.path.exists(LOG_DIR): 
+    os.mkdir(LOG_DIR)
+os.system('cp %s %s' % (MODEL_FILE, LOG_DIR)) # backup of model definition
+os.system('cp train.py %s' % (LOG_DIR)) # backup of train process
 LOG_FOUT = open(os.path.join(LOG_DIR, 'log_train.txt'), 'w')
 LOG_FOUT.write(str(FLAGS)+'\n')
+
+####read train & test data#############################
+#######################################################
+
+#### definition of learning rate(lr)
+def warmup_and_decay_lr(batch,warm_up=False):
+    lr = tf.train.cosine_decay(BASE_LEARNING_RATE,
+                         batch * BATCH_SIZE,
+                         DECAY_STEP,)
+    if warm_up:
+        warmup_steps = int(batch * MAX_EPOCH * 0.2)
+        warmup_lr = ( BASE_LEARNING_RATE * tf.cast(global_step, tf.float32)) / tf.cast(
+            warmup_steps, tf.float32)                    
+        return tf.cond( global_step < warmup_steps, lambda: warmup_lr, lambda: lr)
+    
+    lr = tf.maximum(lr, 0.001)
+    return lr
+
+    
 
 def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
