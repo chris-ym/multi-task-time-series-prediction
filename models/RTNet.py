@@ -19,6 +19,11 @@ features=np.array(total_X_train_time[0]).shape[2]
 risk_features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
+def input_placeholder(batch_size,features,time_steps):
+  data_pl = tf.placeholder(tf.float32, shape=(batch_size, features, time_steps))
+  labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
+  return data_pl, labels_pl
+
 def create_model(output_bias=None):
     
     risk_seq = Input(shape=(seq_len, risk_features))
