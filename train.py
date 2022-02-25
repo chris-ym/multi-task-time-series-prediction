@@ -92,7 +92,9 @@ def log_string(out_str):
 def train():
     with tf.Graph().as_default():
         with tf.device('/gpu:'+str(GPU_INDEX)):
-            
+            data_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, FEATURES, TIME_STEPS)
+            is_training_pl = tf.placeholder(tf.bool, shape=())
+            print(is_training_pl)            
 
 # next_time_pred pkgs
 old_target=df[['target']]
