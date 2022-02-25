@@ -48,7 +48,22 @@ os.system('cp train.py %s' % (LOG_DIR)) # backup of train process
 LOG_FOUT = open(os.path.join(LOG_DIR, 'log_train.txt'), 'w')
 LOG_FOUT.write(str(FLAGS)+'\n')
 
-####read train & test data#############################
+#### read train & test data#############################
+#### Import data (different methods)
+
+def get_data(data_name):
+    import os
+    import pickle
+    name, extension = os.path.splitext(path)
+    if extension == ".csv":
+        data=pd.read_csv("%s.csv"%data_name)
+    elif extension == ".pkl":
+        f=open("%s.pkl"%data_name,'rb')
+        data=pickle.load(f)
+        f.close()
+    else:
+        
+    return data
 #######################################################
 
 #### definition of learning rate(lr)
@@ -72,22 +87,12 @@ def log_string(out_str):
     LOG_FOUT.flush()
     print(out_str)
     
-#### Import data (different methods)
-############################
-def get_data(data_name):
-    import os
-    import pickle
-    name, extension = os.path.splitext(path)
-    if extension == ".csv":
-        data=pd.read_csv("%s.csv"%data_name)
-    elif extension == ".pkl":
-        f=open("%s.pkl"%data_name,'rb')
-        data=pickle.load(f)
-        f.close()
-    else:
-        
-    return data
-    
+
+#### train function (version 2)####
+def train():
+    with tf.Graph().as_default():
+        with tf.device('/gpu:'+str(GPU_INDEX)):
+            
 
 # next_time_pred pkgs
 old_target=df[['target']]
@@ -115,7 +120,7 @@ warm_up_lr = tf_util.WarmUpCosineDecayScheduler(learning_rate_base=learning_rate
                                         warmup_steps=warmup_steps,
                                         hold_base_rate_steps=0)
 
-
+#### train function (version 1)####
 # build training model and save
 def train():
     with tf.Graph().as_default():
