@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
 sys.path.append(os.path.join(BASE_DIR, 'utils'))
-import tf_util
+import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
@@ -188,10 +188,44 @@ def train():
                 save_path = saver.save(sess, os.path.join(LOG_DIR, "model.ckpt"))
                 log_string("Model saved in file: %s" % save_path)
   
-
-
-
+#########################
+def train_one_epoch(sess, ops, train_writer):
+   
+    # Shuffle train files
+    train_file_idxs = np.arange(0, len(TRAIN_DATA))
+    np.random.shuffle(train_file_idxs)
             
+    file_size = TRAIN_DATA.shape[0]
+    num_batches = file_size // BATCH_SIZE
+
+    total_correct = 0
+    total_seen = 0
+    loss_sum = 0
+
+    for batch_idx in range(num_batches):
+        start_idx = batch_idx * BATCH_SIZE
+        end_idx = (batch_idx+1) * BATCH_SIZE
+
+
+        feed_dict = {ops['data1_pl']: TRAIN_TIME.iloc[:,:-2][start_idx:end_idx],
+                     ops['data2_pl']: TRAIN_RISK.iloc[:,:-2][start_idx:end_idx],
+                     ops['label1_pl']: TRAIN_TIME.iloc[:,:-2:-1][start_idx:end_idx],
+                     ops['label2_pl']: TRAIN_TIME.iloc[:,:-1:][start_idx:end_idx],
+                    }
+        summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
+            ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
+        train_writer.add_summary(summary, step)
+        pred_val = np.argmax(pred_val, 1)
+        correct = np.sum(pred_val == current_label[start_idx:end_idx])
+        total_correct += correct
+        total_seen += BATCH_SIZE
+        loss_sum += loss_val
+
+    log_string('mean loss: %f' % (loss_sum / float(num_batches)))
+    log_string('accuracy: %f' % (total_correct / float(total_seen)))
+
+
+############################################################################################            
 # next_time_pred pkgs
 old_target=df[['target']]
 df=df.drop(['target'],axis=1)
