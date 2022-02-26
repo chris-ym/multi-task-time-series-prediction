@@ -25,7 +25,7 @@ def input_placeholder(batch_size,features,time_steps):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return data_pl, labels_pl
 
-def create_model(output_bias=None):
+def create_model(data_df, output_bias=None):
   
   batch_size = data_df.get_shape()[0].value
   time_steps = data_df.get_shape()[1].value  
