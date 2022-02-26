@@ -17,25 +17,30 @@ adam = optimizers.Adam(lr=0.001)
 #########################################################################################################
 features=np.array(total_X_train_time[0]).shape[2]
 risk_features=np.array(total_X_train_risk[0]).shape[2]
+features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
 def input_placeholder(batch_size,features,time_steps):
-  data_pl = tf.placeholder(tf.float32, shape=(batch_size, features, time_steps))
+  data_pl = tf.placeholder(tf.float32, shape=(batch_size, time_steps, features))
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return data_pl, labels_pl
 
 def create_model(output_bias=None):
-    
-    risk_seq = Input(shape=(seq_len, risk_features))
-    x1 = keras.layers.Conv1D(filters=64, kernel_size=1,use_bias=False)(risk_seq)
-    x1 = keras.layers.BatchNormalization()(x1)
-    x1 = keras.layers.ReLU()(x1)
-    x1 = Dropout(0.2)(x1)
- 
-    x1 = keras.layers.Conv1D(filters=risk_features, kernel_size=1,use_bias=False)(x1)
-    x1 = keras.layers.BatchNormalization()(x1)
-    x1 = keras.layers.ReLU()(x1)
-    x1 = Dropout(0.2)(x1)
+  
+  batch_size = data_df.get_shape()[0].value
+  time_steps = data_df.get_shape()[1].value  
+  features = data_df.get_shape()[2].value  
+  
+  risk_seq = Input(shape=(time_steps, features))
+  x1 = keras.layers.Conv1D(filters=64, kernel_size=1,use_bias=False)(risk_seq)
+  x1 = keras.layers.BatchNormalization()(x1)
+  x1 = keras.layers.ReLU()(x1)
+  x1 = Dropout(0.2)(x1)
+
+  x1 = keras.layers.Conv1D(filters=risk_features, kernel_size=1,use_bias=False)(x1)
+  x1 = keras.layers.BatchNormalization()(x1)
+  x1 = keras.layers.ReLU()(x1)
+  x1 = Dropout(0.2)(x1)
      
     '''Initialize time and transformer layers'''
     time_embedding = te.Time2Vector(seq_len)
