@@ -222,7 +222,8 @@ def train_one_epoch(sess, ops, train_writer):
         loss_sum += loss_val
                 
         #### Regression calculation
-       
+        
+    #### calculation of R-squared
 
     log_string('mean loss: %f' % (loss_sum / float(num_batches)))
     log_string('accuracy: %f' % (total_correct / float(total_seen)))
