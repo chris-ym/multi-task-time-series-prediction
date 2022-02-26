@@ -17,7 +17,6 @@ adam = optimizers.Adam(lr=0.001)
 #########################################################################################################
 features=np.array(total_X_train_time[0]).shape[2]
 risk_features=np.array(total_X_train_risk[0]).shape[2]
-features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
 def input_placeholder(batch_size,features,time_steps):
@@ -25,25 +24,26 @@ def input_placeholder(batch_size,features,time_steps):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return data_pl, labels_pl
 
-def create_model(data_df, output_bias=None):
+def create_model(data_time, data_invariant, output_bias=None):
+  batch_size = data_invariant.get_shape()[0].value
+  time_steps = data_invariant.get_shape()[1].value  
+  inv_features = data_invariant.get_shape()[2].value  
+  time_features = data_time.get_shape()[2].value  
+
   
-  batch_size = data_df.get_shape()[0].value
-  time_steps = data_df.get_shape()[1].value  
-  features = data_df.get_shape()[2].value  
-  
-  risk_seq = Input(shape=(time_steps, features))
+  risk_seq = Input(shape=(time_steps, inv_features))
   x1 = keras.layers.Conv1D(filters=64, kernel_size=1,use_bias=False)(risk_seq)
   x1 = keras.layers.BatchNormalization()(x1)
   x1 = keras.layers.ReLU()(x1)
   x1 = Dropout(0.2)(x1)
 
-  x1 = keras.layers.Conv1D(filters=risk_features, kernel_size=1,use_bias=False)(x1)
+  x1 = keras.layers.Conv1D(filters=inv_features, kernel_size=1,use_bias=False)(x1)
   x1 = keras.layers.BatchNormalization()(x1)
   x1 = keras.layers.ReLU()(x1)
   x1 = Dropout(0.2)(x1)
      
     '''Initialize time and transformer layers'''
-    time_embedding = te.Time2Vector(seq_len)
+    time_embedding = te.Time2Vector(time_steps)
     #attn_layer1 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
     #attn_layer2 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
     #attn_layer3 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
@@ -52,7 +52,7 @@ def create_model(data_df, output_bias=None):
     for i in range(num_trans_enc):
         num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
     '''Construct model'''
-    in_seq = Input(shape=(seq_len, features))
+    in_seq = Input(shape=(seq_len, time_features))
     x2 = time_embedding(in_seq)
     x2 = Concatenate(axis=-1)([in_seq, x2])
     # set different number transformer encoder
