@@ -19,12 +19,12 @@ features=np.array(total_X_train_time[0]).shape[2]
 risk_features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
-def input_placeholder(batch_size,features,time_steps):
+def input_placeholder(batch_size,time_steps, features):
   data_pl = tf.placeholder(tf.float32, shape=(batch_size, time_steps, features))
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return data_pl, labels_pl
 
-def create_model(data_time, data_invariant, output_bias=None):
+def create_model(data_invariant, data_time, output_bias=None):
   batch_size = data_invariant.get_shape()[0].value
   time_steps = data_invariant.get_shape()[1].value  
   inv_features = data_invariant.get_shape()[2].value  
