@@ -50,16 +50,21 @@ def create_model(data_df, output_bias=None):
 
     out1 = Dense(1, activation='linear',name='reg')(x)
     if output_bias is not None:
-        output_bias = tf.keras.initializers.Constant(output_bias)
-        out2 = Dense(1, activation='sigmoid',name='binary_class',bias_initializer=output_bias)(x)
+      output_bias = tf.keras.initializers.Constant(output_bias)
+      out2 = Dense(1, activation='sigmoid',name='binary_class',bias_initializer=output_bias)(x)
     else:
-        out2 = Dense(1, activation='sigmoid',name='binary_class')(x)
+      out2 = Dense(1, activation='sigmoid',name='binary_class')(x)        
+      
+    return out1, out2
 
-    model = Model(inputs=in_seq, outputs=[out1,out2])
-
-    model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'])
-
-    return model
+def loss_def(pred1, pred2, label1, label2, impt_weight=100):
+    label2_onehot = tf.one_hot(indices=label2, depth=2)
+    loss1 = tf.losses.mean_squared_error(label1, pred1)
+    loss2 = tf.losses.sigmoid_cross_entropy(label2_onehot, logit = pred2)
+  
+    final_loss = tf.reduce_mean(loss1 + impt_weight*loss2)
+    final_loss = tf.reduce_mean(final_loss)
+    return final_loss, loss1, loss2
 
 #############
 if __name__=='__main__':
