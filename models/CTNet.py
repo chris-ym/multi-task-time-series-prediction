@@ -19,7 +19,19 @@ adam = optimizers.Adam(lr=0.001)
 features=np.array(total_X_train_cb[0]).shape[2]
 #################################################################################################
 
-def create_model(output_bias=None):
+
+def input_placeholder(batch_size,features,time_steps):
+    
+    data_pl = tf.placeholder(tf.float32, shape=(batch_size, time_steps, features))
+    labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
+    return data_pl, labels_pl
+
+ 
+def create_model(data_df, output_bias=None):
+    
+    batch_size = data_df.get_shape()[0].value
+    time_steps = data_df.get_shape()[1].value  
+    features = data_df.get_shape()[2].value  
 
     '''Initialize time and transformer layers'''    
     time_embedding = te.Time2Vector(seq_len)
@@ -30,10 +42,10 @@ def create_model(output_bias=None):
     in_seq = Input(shape=(seq_len, features))
     x2 = time_embedding(in_seq)
     x2 = Concatenate(axis=-1)([in_seq, x2])
-    
+
     for i in range(num_trans_enc):
        x2 = num_te[i]((x2, x2, x2))
-    
+
     x = GlobalAveragePooling1D()(x2)
 
     out1 = Dense(1, activation='linear',name='reg')(x)
