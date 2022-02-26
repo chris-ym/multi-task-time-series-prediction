@@ -32,52 +32,55 @@ def create_model(data_time, data_invariant, output_bias=None):
 
   
   risk_seq = Input(shape=(time_steps, inv_features))
-  x1 = keras.layers.Conv1D(filters=64, kernel_size=1,use_bias=False)(risk_seq)
-  x1 = keras.layers.BatchNormalization()(x1)
-  x1 = keras.layers.ReLU()(x1)
-  x1 = Dropout(0.2)(x1)
+  x1 = tf.keras.layers.Conv1D(filters=64, kernel_size=1,use_bias=False)(risk_seq)
+  x1 = tf.keras.layers.BatchNormalization()(x1)
+  x1 = tf.keras.layers.ReLU()(x1)
+  x1 = tf.keras.layers.Dropout(0.2)(x1)
 
-  x1 = keras.layers.Conv1D(filters=inv_features, kernel_size=1,use_bias=False)(x1)
-  x1 = keras.layers.BatchNormalization()(x1)
-  x1 = keras.layers.ReLU()(x1)
-  x1 = Dropout(0.2)(x1)
+  x1 = tf.keras.layers.Conv1D(filters=inv_features, kernel_size=1,use_bias=False)(x1)
+  x1 = tf.keras.layers.BatchNormalization()(x1)
+  x1 = tf.keras.layers.ReLU()(x1)
+  x1 = tf.keras.layers.Dropout(0.2)(x1)
      
-    '''Initialize time and transformer layers'''
-    time_embedding = te.Time2Vector(time_steps)
-    #attn_layer1 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    #attn_layer2 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    #attn_layer3 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    #attn_layer4 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
-    num_te=[]
-    for i in range(num_trans_enc):
-        num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
-    '''Construct model'''
-    in_seq = Input(shape=(seq_len, time_features))
-    x2 = time_embedding(in_seq)
-    x2 = Concatenate(axis=-1)([in_seq, x2])
-    # set different number transformer encoder
-    #x2 = attn_layer1((x2, x2, x2))
-    #x2 = attn_layer2((x2, x2, x2))
-    for i in range(num_trans_enc):
-       x2 = num_te[i]((x2, x2, x2))
+  '''Initialize time and transformer layers'''
+  time_embedding = te.Time2Vector(time_steps)
+  #attn_layer1 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+  #attn_layer2 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+  #attn_layer3 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+  #attn_layer4 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
+  num_te=[]
+  for i in range(num_trans_enc):
+      num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
+  '''Construct model'''
+  in_seq = Input(shape=(seq_len, time_features))
+  x2 = time_embedding(in_seq)
+  x2 = Concatenate(axis=-1)([in_seq, x2])
+  # set different number transformer encoder
+  #x2 = attn_layer1((x2, x2, x2))
+  #x2 = attn_layer2((x2, x2, x2))
+  for i in range(num_trans_enc):
+     x2 = num_te[i]((x2, x2, x2))
     
-    x = Concatenate(axis=-1)([x1, x2])
-    x = GlobalAveragePooling1D()(x)
+  x = Concatenate(axis=-1)([x1, x2])
+  x = GlobalAveragePooling1D()(x)
 
-    out1 = Dense(1, activation='linear',name='reg')(x)
-    if output_bias is not None:
-        output_bias = tf.keras.initializers.Constant(output_bias)
-        out2 = Dense(1, activation='sigmoid',name='binary_class',bias_initializer=output_bias)(x)
-    else:
-        out2 = Dense(1, activation='sigmoid',name='binary_class')(x)
-        
-    model = Model(inputs=[in_seq, risk_seq], outputs=[out1,out2])
-    
-    model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., loss_weight])
+  out1 = Dense(1, activation='linear',name='reg')(x)
+  if output_bias is not None:
+    output_bias = tf.keras.initializers.Constant(output_bias)
+    out2 = Dense(1, activation='sigmoid',name='binary_class',bias_initializer=output_bias)(x)
+  else:
+    out2 = Dense(1, activation='sigmoid',name='binary_class')(x)        
+      
+  return out1, out2
 
-    return model
-
-
+def loss_def(pred1, pred2, label1, label2, impt_weight=100):
+  label2_onehot = tf.one_hot(indices=label2, depth=2)
+  loss1 = tf.losses.mean_squared_error(label1, pred1)
+  loss2 = tf.losses.sigmoid_cross_entropy(label2_onehot, logit = pred2)
+  
+  final_loss = tf.reduce_mean(loss1 + impt_weight*loss2)
+  final_loss = tf.reduce_mean(final_loss)
+  return final_loss, loss1, loss2
 
 #############
 if __name__=='__main__':
