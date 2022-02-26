@@ -71,7 +71,7 @@ def warmup_and_decay_lr(batch,warm_up=False):
     lr = tf.train.cosine_decay(BASE_LEARNING_RATE,
                          batch * BATCH_SIZE,
                          DECAY_STEP,)
-    if warm_up:
+    if warm_up == True:
         warmup_steps = int(batch * MAX_EPOCH * 0.2)
         warmup_lr = ( BASE_LEARNING_RATE * tf.cast(global_step, tf.float32)) / tf.cast(
             warmup_steps, tf.float32)                    
@@ -96,6 +96,17 @@ def train():
             is_training_pl = tf.placeholder(tf.bool, shape=())
             print(is_training_pl)            
 
+            batch = tf.Variable(0)
+            
+            # Get model and loss 
+            pred, end_points = MODEL.create_model(data_pl, is_training_pl)
+            loss = MODEL.get_loss(pred, labels_pl, end_points)
+            tf.summary.scalar('loss', loss)
+            
+            correct = tf.equal(tf.argmax(pred, 1), tf.to_int64(labels_pl))
+            accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(BATCH_SIZE)
+            tf.summary.scalar('accuracy', accuracy)            
+            
 # next_time_pred pkgs
 old_target=df[['target']]
 df=df.drop(['target'],axis=1)
