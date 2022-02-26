@@ -118,13 +118,79 @@ def train():
             
             # Multi-output calculation
             #####
-            #correct_1 = pred1, tf.to_int64(label1_pl).............
-            correct_2 = tf.equal(tf.argmax(pred2, 1), tf.to_int64(label2_pl))
-           
+            unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.to_int64(label1_pl),pred1)))
+            r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss1)))
+            
+            correct = tf.equal(tf.argmax(pred2, 1), tf.to_int64(label2_pl))           
             accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(BATCH_SIZE)
-            tf.summary.scalar('accuracy', accuracy)            
             
+            tf.summary.scalar('R-squared', r_2)  
+            tf.summary.scalar('accuracy', accuracy)    
+        
+
+            # Get training operator
+            learning_rate = warmup_and_decay_lr(batch)
+            tf.summary.scalar('learning_rate', learning_rate)
+            if OPTIMIZER == 'gradient descent':
+                optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+            elif OPTIMIZER == 'adam':
+                optimizer = tf.train.AdamOptimizer(learning_rate)
+                
+            train_op1 = optimizer.minimize(loss1, global_step=batch)
+            train_op2 = optimizer.minimize(loss2, global_step=batch)
             
+            # Add ops to save and restore all the variables.
+            saver = tf.train.Saver()
+            
+        # Create a session
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.allow_soft_placement = True
+        config.log_device_placement = False
+        sess = tf.Session(config=config)
+
+        # Add summary writers
+        #merged = tf.merge_all_summaries()
+        merged = tf.summary.merge_all()
+        train_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'train'),
+                                  sess.graph)
+        test_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'test'))
+        
+        # Init variables
+        init = tf.global_variables_initializer()
+        # To fix the bug introduced in TF 0.12.1 as in
+        # http://stackoverflow.com/questions/41543774/invalidargumenterror-for-tensor-bool-tensorflow-0-12-1
+        #sess.run(init)
+        sess.run(init, {is_training_pl: True})
+
+        ops = {'data1_pl': data1_pl,
+               'data2_pl': data2_pl,
+               'label1_pl': label1_pl,
+               'label2_pl': label2_pl,
+               'pred1': pred1,
+               'pred2': pred2,
+               'loss1': loss1,
+               'loss2': loss2,
+               'train_op1': train_op1,
+               'train_op2': train_op2,
+               'merged': merged,
+               'step': batch}            
+
+        for epoch in range(MAX_EPOCH):
+            log_string('**** EPOCH %03d ****' % (epoch))
+            sys.stdout.flush()
+             
+            train_one_epoch(sess, ops, train_writer)
+            eval_one_epoch(sess, ops, test_writer)
+            
+            # Save the variables to disk.
+            if epoch % 10 == 0:
+                save_path = saver.save(sess, os.path.join(LOG_DIR, "model.ckpt"))
+                log_string("Model saved in file: %s" % save_path)
+  
+
+
+
             
 # next_time_pred pkgs
 old_target=df[['target']]
