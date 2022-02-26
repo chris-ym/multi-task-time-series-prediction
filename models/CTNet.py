@@ -34,7 +34,7 @@ def create_model(data_df, output_bias=None):
     features = data_df.get_shape()[2].value  
 
     '''Initialize time and transformer layers'''    
-    time_embedding = te.Time2Vector(seq_len)
+    time_embedding = te.Time2Vector(time_steps)
     num_te=[]
     for i in range(num_trans_enc):
         num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
