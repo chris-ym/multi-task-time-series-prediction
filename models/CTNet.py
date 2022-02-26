@@ -39,7 +39,7 @@ def create_model(data_df, output_bias=None):
     for i in range(num_trans_enc):
         num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
     '''Construct model'''
-    in_seq = Input(shape=(seq_len, features))
+    in_seq = Input(shape=(time_steps, features))
     x2 = time_embedding(in_seq)
     x2 = Concatenate(axis=-1)([in_seq, x2])
 
