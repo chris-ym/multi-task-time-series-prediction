@@ -20,7 +20,7 @@ features=np.array(total_X_train_cb[0]).shape[2]
 #################################################################################################
 
 
-def input_placeholder(batch_size,features,time_steps):
+def input_placeholder(batch_size, time_steps, features):
     
     data_pl = tf.placeholder(tf.float32, shape=(batch_size, time_steps, features))
     labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
