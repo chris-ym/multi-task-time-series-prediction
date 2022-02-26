@@ -91,21 +91,36 @@ def log_string(out_str):
 #### train function (version 2)####
 def train():
     with tf.Graph().as_default():
-        with tf.device('/gpu:'+str(GPU_INDEX)):            
-            data_pl, labels_pl = MODEL.input_placeholder(BATCH_SIZE, FEATURES, TIME_STEPS)
-            is_training_pl = tf.placeholder(tf.bool, shape=())
-            print(is_training_pl)            
-
+        with tf.device('/gpu:'+str(GPU_INDEX)): 
+            #is_training_pl = tf.placeholder(tf.bool, shape=(BATCH_SIZE))
+            #print(is_training_pl)  
             batch = tf.Variable(0)
             
-            # Get model and loss 
-            pred, end_points = MODEL.create_model(data_pl, is_training_pl)
-            loss loss1, loss2= MODEL.loss_def(pred, labels_pl, end_points)
+            if FLAGS.model == 'RTNet':      
+                data1_pl, label1_pl = MODEL.input_placeholder(BATCH_SIZE, TIME_STEPS, RISK_FEATURES)                
+                data2_pl, label2_pl = MODEL.input_placeholder(BATCH_SIZE, TIME_STEPS, FEATURES)
+                # Get model
+                pred1, pred2 = MODEL.create_model(data1_pl, data2_pl)
+                
+            elif FLAGS.model == 'CTNet':
+                data_pl, label1_pl = MODEL.input_placeholder(BATCH_SIZE, TIME_STEPS, FEATURES)                
+                data_pl, label2_pl = MODEL.input_placeholder(BATCH_SIZE, TIME_STEPS, FEATURES)                
+                # Get model
+                pred1, pred2 = MODEL.create_model(data_pl)
+            else:
+                print("Neither RTNet or CTNet couldn't be processed!!")
+                
+            # Get loss
+            loss, loss1, loss2= MODEL.loss_def(pred1, pred2, label1_pl, label2_pl)
             tf.summary.scalar('loss1', loss1)
             tf.summary.scalar('loss2', loss2)
             tf.summary.scalar('total_loss', loss)
             
-            correct = tf.equal(tf.argmax(pred, 1), tf.to_int64(labels_pl))
+            # Multi-output calculation
+            #####
+            #correct_1 = pred1, tf.to_int64(label1_pl).............
+            correct_2 = tf.equal(tf.argmax(pred2, 1), tf.to_int64(label2_pl))
+           
             accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(BATCH_SIZE)
             tf.summary.scalar('accuracy', accuracy)            
             
