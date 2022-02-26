@@ -7,6 +7,14 @@ import pandas as pd
 import os
 import pickle
 
+def shuffle_data(data, labels):
+  """ Shuffle data and labels.
+      shuffled data, label and shuffle indices
+  """
+  idx = np.arange(len(labels))
+  np.random.shuffle(idx)
+  return data[idx], labels[idx], idx
+
 def col_append(columns,num_dup):
     '''
     return all columns, all columns deleted categroical 
