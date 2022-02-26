@@ -212,14 +212,17 @@ def train_one_epoch(sess, ops, train_writer):
                      ops['label1_pl']: TRAIN_TIME.iloc[:,:-2:-1][start_idx:end_idx],
                      ops['label2_pl']: TRAIN_TIME.iloc[:,:-1:][start_idx:end_idx],
                     }
-        summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
-            ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
+        summary, step, _, _, loss1_val, loss2_val, pred1_val, pred2_val = sess.run([ops['merged'], ops['step'],
+            ops['train_op1'], ops['train_op2'], ops['loss1'], ops['loss2'], ops['pred1'], ops['pred2']], feed_dict=feed_dict)
         train_writer.add_summary(summary, step)
-        pred_val = np.argmax(pred_val, 1)
-        correct = np.sum(pred_val == current_label[start_idx:end_idx])
+        pred2_val = np.argmax(pred2_val, 1)
+        correct = np.sum(pred2_val == TRAIN_TIME.iloc[:,:-1:][start_idx:end_idx])
         total_correct += correct
         total_seen += BATCH_SIZE
         loss_sum += loss_val
+                
+        #### Regression calculation
+       
 
     log_string('mean loss: %f' % (loss_sum / float(num_batches)))
     log_string('accuracy: %f' % (total_correct / float(total_seen)))
