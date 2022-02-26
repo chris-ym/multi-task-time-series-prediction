@@ -91,8 +91,8 @@ def log_string(out_str):
 #### train function (version 2)####
 def train():
     with tf.Graph().as_default():
-        with tf.device('/gpu:'+str(GPU_INDEX)):
-            data_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, FEATURES, TIME_STEPS)
+        with tf.device('/gpu:'+str(GPU_INDEX)):            
+            data_pl, labels_pl = MODEL.input_placeholder(BATCH_SIZE, FEATURES, TIME_STEPS)
             is_training_pl = tf.placeholder(tf.bool, shape=())
             print(is_training_pl)            
 
@@ -100,12 +100,16 @@ def train():
             
             # Get model and loss 
             pred, end_points = MODEL.create_model(data_pl, is_training_pl)
-            loss = MODEL.get_loss(pred, labels_pl, end_points)
-            tf.summary.scalar('loss', loss)
+            loss loss1, loss2= MODEL.loss_def(pred, labels_pl, end_points)
+            tf.summary.scalar('loss1', loss1)
+            tf.summary.scalar('loss2', loss2)
+            tf.summary.scalar('total_loss', loss)
             
             correct = tf.equal(tf.argmax(pred, 1), tf.to_int64(labels_pl))
             accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(BATCH_SIZE)
             tf.summary.scalar('accuracy', accuracy)            
+            
+            
             
 # next_time_pred pkgs
 old_target=df[['target']]
