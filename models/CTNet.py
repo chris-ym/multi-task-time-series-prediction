@@ -21,7 +21,8 @@ features=np.array(total_X_train_cb[0]).shape[2]
 
 
 def input_placeholder(batch_size, time_steps, features):
-    
+    import tensorflow as tf
+    tf.compat.v1.disable_v2_behavior()
     data_pl = tf.placeholder(tf.float32, shape=(batch_size, time_steps, features))
     labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
     return data_pl, labels_pl
