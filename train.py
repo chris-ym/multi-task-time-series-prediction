@@ -92,8 +92,6 @@ def log_string(out_str):
 def train():
     with tf.Graph().as_default():
         with tf.device('/gpu:'+str(GPU_INDEX)): 
-            #is_training_pl = tf.placeholder(tf.bool, shape=(BATCH_SIZE))
-            #print(is_training_pl)  
             batch = tf.Variable(0)
             
             if FLAGS.model == 'RTNet':      
@@ -117,11 +115,12 @@ def train():
             tf.summary.scalar('total_loss', loss)
             
             # Multi-output calculation
-            #####
-            unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.to_int64(label1_pl),pred1)))
-            r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss1)))
+            ### tf.to_int64 (TF1.X) --> tf.compat.v1.to_int64 (TF2.X)
+            #unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.compat.v1.to_int64(label1_pl),pred1)))
+            #r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss1)))
+            r_2 = utils.cal_rsquared(label1_pl, pred1, loss1)
             
-            correct = tf.equal(tf.argmax(pred2, 1), tf.to_int64(label2_pl))           
+            correct = tf.equal(tf.argmax(pred2, 1), tf.compat.v1.to_int64(label2_pl))           
             accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(BATCH_SIZE)
             
             tf.summary.scalar('R-squared', r_2)  
@@ -201,6 +200,7 @@ def train_one_epoch(sess, ops, train_writer):
     total_correct = 0
     total_seen = 0
     loss_sum = 0
+    
 
     for batch_idx in range(num_batches):
         start_idx = batch_idx * BATCH_SIZE
@@ -220,8 +220,14 @@ def train_one_epoch(sess, ops, train_writer):
         total_correct += correct
         total_seen += BATCH_SIZE
         loss_sum += loss_val
+        
+        if batch_idx == 0:
+            reg_pred = pred1_val
+        else:
+            reg_pred = tf.concat([reg_pred, pred1_val], 0)
                 
         #### Regression calculation
+        cal_rsquared()
         
     #### calculation of R-squared
 
@@ -229,51 +235,7 @@ def train_one_epoch(sess, ops, train_writer):
     log_string('accuracy: %f' % (total_correct / float(total_seen)))
 
 
-############################################################################################            
-# next_time_pred pkgs
-old_target=df[['target']]
-df=df.drop(['target'],axis=1)
 
-
-# Number of training samples.
-sample_count = len(train_sample)
-epochs = max_epoch
-
-# Number of warmup epochs.
-warmup_epoch = int(0.2*max_epoch)
-
-# Base learning rate after warmup.
-learning_rate_base = 0.001
-
-total_steps = int(epochs * sample_count / batch_size)
-
-# Compute the number of warmup batches.
-warmup_steps = int(warmup_epoch * sample_count / batch_size)
-
-warm_up_lr = tf_util.WarmUpCosineDecayScheduler(learning_rate_base=learning_rate_base,
-                                        total_steps=total_steps,
-                                        warmup_learning_rate=0.0,
-                                        warmup_steps=warmup_steps,
-                                        hold_base_rate_steps=0)
-
-#### train function (version 1)####
-# build training model and save
-def train():
-    with tf.Graph().as_default():
-        i=0
-        
-        if MODEL == "RTNet":
-            0000
-        elif MODEL == "CTNet":
-            0000
-        else:
-            "Error: Neither RTNet nor CTNet"
-        
-        clf=create_model()
-        clf.summary()
-        history=clf.fit(np.asarray(train_cb),[np.asarray(train_reg),np.asarray(train_lbl)],epochs=max_epoch,batch_size=batch_size,callbacks=[callback], validation_data=(np.asarray(val_cb),[np.asarray(val_reg),np.asarray(val_lbl)])) 
-        clf.save("ensemble_2SA_eval1_%s_combinemodel_v2_0to10_loss_weight_1of5.h5" % i)
-        #for i in range(num_data)
         
 if __name__ == "__main__":
     train()
