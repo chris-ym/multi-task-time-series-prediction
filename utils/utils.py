@@ -8,8 +8,9 @@ import os
 import pickle
 import tensorflow as tf
 
+### tf.to_int64 (TF1.X) --> tf.compat.v1.to_int64 (TF2.X)
 def cal_rsquared(label, pred, loss):
-  unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.to_int64(label),pred)))
+  unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.compat.v1.to_int64(label),pred)))
   r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss)))  
   return r_2
 
