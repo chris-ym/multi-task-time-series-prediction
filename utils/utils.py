@@ -6,6 +6,12 @@ import numpy as np
 import pandas as pd
 import os
 import pickle
+import tensorflow as tf
+
+def cal_rsquared(label, pred, loss):
+  unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.to_int64(label),pred)))
+  r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss)))  
+  return r_2
 
 def shuffle_data(data, labels):
   """ Shuffle data and labels.
