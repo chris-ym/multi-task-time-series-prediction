@@ -9,10 +9,17 @@ import pickle
 import tensorflow as tf
 
 ### tf.to_int64 (TF1.X) --> tf.compat.v1.to_int64 (TF2.X)
-def cal_rsquared(label, pred, loss):
-  unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.compat.v1.to_int64(label),pred)))
-  r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss)))  
-  return r_2
+#def cal_rsquared(label, pred, loss):
+  #unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.compat.v1.to_int64(label),pred)))
+  #r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss)))  
+  #return r_2
+  
+def cal_rsquared(label, pred):
+    
+    residual = tf.reduce_sum(tf.square(tf.subtract(label,pred)))
+    total = tf.reduce_sum(tf.square(tf.subtract(label, tf.reduce_mean(label))))
+    r2 = tf.subtract(1.0, tf.divide(residual, total))
+    return r2
 
 def shuffle_data(data, labels):
   """ Shuffle data and labels.
