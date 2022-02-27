@@ -219,20 +219,23 @@ def train_one_epoch(sess, ops, train_writer):
         correct = np.sum(pred2_val == TRAIN_TIME.iloc[:,:-1:][start_idx:end_idx])
         total_correct += correct
         total_seen += BATCH_SIZE
-        loss_sum += loss_val
+        loss_sum1 += loss1_val
+        loss_sum2 += loss2_val
         
         if batch_idx == 0:
             reg_pred = pred1_val
         else:
             reg_pred = tf.concat([reg_pred, pred1_val], 0)
                 
-        #### Regression calculation
-        cal_rsquared()
-        
+    #### Regression calculation    
+    r2 = cal_rsquared(tf.compat.v1.to_int64(TRAIN_TIME.iloc[:,:-2:-1]), tf.compat.v1.to_int64(reg_pred))   
+    
     #### calculation of R-squared
-
-    log_string('mean loss: %f' % (loss_sum / float(num_batches)))
+    log_string('mean loss1: %f' % (loss_sum1 / float(num_batches)))
+    log_string('r-squared: %f' % (loss_sum1 / float(num_batches)))
+    log_string('mean loss2: %f' % (float(r2)))
     log_string('accuracy: %f' % (total_correct / float(total_seen)))
+    
 
 
 
