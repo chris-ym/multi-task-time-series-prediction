@@ -120,27 +120,41 @@ def train():
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
-        avg_loss = tf.keras.metrics.Mean('loss', dtype=tf.float32)
-        avg_val_loss = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
+        avg_loss1 = tf.keras.metrics.Mean('loss', dtype=tf.float32)
+        avg_loss2 = tf.keras.metrics.Mean('loss', dtype=tf.float32)        
+        avg_val_loss1 = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
+        avg_val_loss2 = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
         
         for epoch in range(1, FLAGS.max_epoch + 1):
-            for batch in len(train_dataset)//FLAGS.batch_size:
+            for batch in len(data)//FLAGS.batch_size:
                 with tf.GradientTape() as tape:
-                    outputs = model(images, training=True)
-                    regularization_loss = tf.reduce_sum(model.losses)
+                    output1, output2 = model([data, data2], training=True)
+                    regularization_loss1, regularization_loss2= tf.reduce_sum(model.losses)
                     pred_loss = []
-                    for output, label, loss_fn in zip(outputs, labels, loss):
-                        pred_loss.append(loss_fn(label, output))
-                    total_loss = tf.reduce_sum(pred_loss) + regularization_loss
+                    for output_1, output_2, label_1, label_2, loss1, loss2 in zip(output1, output2, label1, label2, loss[0], loss[1]):
+                        pred_loss1.append(loss1(label_1, output_1))
+                        pred_loss2.append(loss2(label_2, output_2))
+                    total_loss1 = tf.reduce_sum(pred_loss1) + regularization_loss1
+                    total_loss2 = tf.reduce_sum(pred_loss2) + regularization_loss2
 
-                grads = tape.gradient(total_loss, model.trainable_variables)
+                grads1 = tape.gradient(total_loss1, model.trainable_variables)
+                grads2 = tape.gradient(total_loss2, model.trainable_variables)
+                
                 optimizer.apply_gradients(
-                    zip(grads, model.trainable_variables))
+                    zip(grads1, model.trainable_variables))
+                    
+                logging.info("{}_train_loss1_{}, {}, {}".format(
+                    epoch, batch, total_loss1 .numpy(),
+                    list(map(lambda x: np.sum(x.numpy()), pred_loss1))))
+                avg_loss1.update_state(total_loss1) 
+                
+                optimizer.apply_gradients(
+                    zip(grads2, model.trainable_variables))                    
 
-                logging.info("{}_train_{}, {}, {}".format(
-                    epoch, batch, total_loss.numpy(),
-                    list(map(lambda x: np.sum(x.numpy()), pred_loss))))
-                avg_loss.update_state(total_loss) 
+                logging.info("{}_train_loss1_{}, {}, {}".format(
+                    epoch, batch, total_loss1 .numpy(),
+                    list(map(lambda x: np.sum(x.numpy()), pred_loss1))))
+                avg_loss2.update_state(total_loss1) 
     '''
         
     else:
