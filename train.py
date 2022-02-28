@@ -91,6 +91,8 @@ elif FLAGS.model == "CTNet":
     model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
     
 ####definition of model
+look_ahead_mask = transformer_encoder.create_look_ahead_mask(seq_len)
+
 def setup_model():
     if FLAGS.model == "RTNet":
         model = create_model(data, data2)
@@ -112,8 +114,34 @@ def setup_model():
     
 #### train function (version 2)####
 def train():
+    #### import training data and validatoin data(option)
+    
+    
+    '''
+    #### eager mode
     if FLAGS.mode == "eager_mode":
-        000
+        avg_loss = tf.keras.metrics.Mean('loss', dtype=tf.float32)
+        avg_val_loss = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
+        
+        for epoch in range(1, FLAGS.max_epoch + 1):
+            for batch in len(train_dataset)//FLAGS.batch_size:
+                with tf.GradientTape() as tape:
+                    outputs = model(images, training=True)
+                    regularization_loss = tf.reduce_sum(model.losses)
+                    pred_loss = []
+                    for output, label, loss_fn in zip(outputs, labels, loss):
+                        pred_loss.append(loss_fn(label, output))
+                    total_loss = tf.reduce_sum(pred_loss) + regularization_loss
+
+                grads = tape.gradient(total_loss, model.trainable_variables)
+                optimizer.apply_gradients(
+                    zip(grads, model.trainable_variables))
+
+                logging.info("{}_train_{}, {}, {}".format(
+                    epoch, batch, total_loss.numpy(),
+                    list(map(lambda x: np.sum(x.numpy()), pred_loss))))
+                avg_loss.update_state(total_loss) 
+    '''
         
     else:
         sample_count = len(data)
