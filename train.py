@@ -76,11 +76,10 @@ def log_string(out_str):
 ####load model weight
 
 if FLAGS.model == "RTNet":
-    model_weights = os.getcwd() + '\model_weights\best_RTNet_weights.h5'
-    save_weight_name = 'best_RTNet_weights'
+    model_weights = os.getcwd() + '\model_weights\best_RTNet_weights.h5'   
 elif FLAGS.model == "CTNet":
     model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
-    save_weight_name = 'best_CTNet_weights'
+    
 ####definition of model
 def setup_model():
     if FLAGS.model == "RTNet":
@@ -118,7 +117,7 @@ def train():
         
         callback = [
             keras.callbacks.ModelCheckpoint(
-                "%s.h5"%save_weight_name, save_best_only=True, monitor="val_loss"
+                "%s.h5"%model_weights, save_best_only=True, monitor="val_loss"
             ),
             keras.callbacks.ReduceLROnPlateau(
                 monitor="val_loss", factor=0.2, patience=20, min_lr=1e-9
