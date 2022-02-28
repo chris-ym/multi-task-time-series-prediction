@@ -70,7 +70,11 @@ def create_model(data_invariant, data_time, output_bias=None):
   else:
     out2 = Dense(1, activation='sigmoid',name='binary_class')(x)        
       
-  return out1, out2
+  model = Model(inputs=[risk_seq, in_seq], outputs=[out1,out2])
+
+  #model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., 100.])
+
+  return model 
 
 
 #############
