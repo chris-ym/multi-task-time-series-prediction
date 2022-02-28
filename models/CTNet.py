@@ -7,10 +7,14 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, '../utils'))
+sys.path.append(os.path.join(BASE_DIR, '../transformer_encoder'))
 sys.path.append(os.path.join(BASE_DIR, '../../utils'))
 import transformer_encoder as te
+from transformer_encoder import *
 import utils
 from keras import optimizers
+from tensorflow.keras.models import *
+from tensorflow.keras.layers import *
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
 
 adam = optimizers.Adam(lr=0.001)
@@ -19,15 +23,6 @@ adam = optimizers.Adam(lr=0.001)
 features=np.array(total_X_train_cb[0]).shape[2]
 #################################################################################################
 
-
-def input_placeholder(batch_size, time_steps, features):
-    import tensorflow as tf
-    tf.compat.v1.disable_v2_behavior()
-    data_pl = tf.placeholder(tf.float32, shape=(batch_size, time_steps, features))
-    labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
-    return data_pl, labels_pl
-
- 
 def create_model(data_df, output_bias=None):
     
     batch_size = data_df.get_shape()[0].value
@@ -57,15 +52,6 @@ def create_model(data_df, output_bias=None):
       out2 = Dense(1, activation='sigmoid',name='binary_class')(x)        
       
     return out1, out2
-
-def loss_def(pred1, pred2, label1, label2, impt_weight=100):
-    label2_onehot = tf.one_hot(indices=label2, depth=2)
-    loss1 = tf.losses.mean_squared_error(label1, pred1)
-    loss2 = tf.losses.sigmoid_cross_entropy(label2_onehot, logit = pred2)
-  
-    final_loss = tf.reduce_mean(loss1 + impt_weight*loss2)
-    final_loss = tf.reduce_mean(final_loss)
-    return final_loss, loss1, loss2
 
 #############
 if __name__=='__main__':
