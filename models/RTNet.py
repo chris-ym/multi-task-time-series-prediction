@@ -24,10 +24,10 @@ risk_features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
 def create_model(data_invariant, data_time, output_bias=None):
-  batch_size = data_invariant.get_shape()[0].value
-  time_steps = data_invariant.get_shape()[1].value  
-  inv_features = data_invariant.get_shape()[2].value  
-  time_features = data_time.get_shape()[2].value  
+  batch_size = data_invariant.shape[0].value
+  time_steps = data_invariant.shape[1].value  
+  inv_features = data_invariant.shape[2].value  
+  time_features = data_time.shape[2].value  
 
   
   risk_seq = Input(shape=(time_steps, inv_features))
@@ -49,7 +49,7 @@ def create_model(data_invariant, data_time, output_bias=None):
   #attn_layer4 = te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2)
   num_te=[]
   for i in range(num_trans_enc):
-      num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
+      num_te.append(te.TransformerEncoder(d_k=d_k, d_v=d_v, ff_dim=ff_dim, n_heads=n_heads, mask=look_ahead_mask, dropout=0.2))
   '''Construct model'''
   in_seq = Input(shape=(time_steps, time_features))
   x2 = time_embedding(in_seq)
