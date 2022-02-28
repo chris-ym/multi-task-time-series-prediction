@@ -14,9 +14,19 @@ sys.path.append(os.path.join(BASE_DIR, 'models'))
 sys.path.append(os.path.join(BASE_DIR, 'utils'))
 import utils
 
+def str_to_bool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() in {'False', 'false', 'f', '0', 'no', 'n'}:
+        return False
+    elif value.lower() in {'True', 'true', 't', '1', 'yes', 'y'}:
+        return True
+    raise ValueError(f'{value} is not a valid boolean value')
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='RTNet', help='Model name: RTNet')
+parser.add_argument('--pretrained', type=str_to_bool, default=False, help='boolean value')
 parser.add_argument('--mode', default='training_mode', help='traing mode[default: training_mode]')
 parser.add_argument('--num_data', type=int, default='10', help='number of balanced data')
 parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
@@ -94,6 +104,9 @@ def setup_model():
     loss = ['mse','binary_crossentropy']
     
     model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
+    
+    if Flags.pretrained == 'True':
+        model.load_weight(model_weights)
     
     return model, optimizer, loss
     
