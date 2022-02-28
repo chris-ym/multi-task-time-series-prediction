@@ -77,9 +77,10 @@ def log_string(out_str):
 
 if FLAGS.model == "RTNet":
     model_weights = os.getcwd() + '\model_weights\best_RTNet_weights.h5'
+    save_weight_name = 'best_RTNet_weights'
 elif FLAGS.model == "CTNet":
-    model_weights = os.getcwd() + '\model_weights\best_cTNet_weights.h5'
-    
+    model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
+    save_weight_name = 'best_CTNet_weights'
 ####definition of model
 def setup_model():
     if FLAGS.model == "RTNet":
@@ -90,8 +91,12 @@ def setup_model():
         print("None of the constructed model!")
         
     ##set loss weight
-    model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
+    optimizer = tf.keras.optimizers.Adam(lr=FLAGS.learning_rate)
+    loss = ['mse','binary_crossentropy']
     
+    model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
+    
+    return model, optimizer, loss
     
 #### train function (version 2)####
 def train():
@@ -99,18 +104,32 @@ def train():
         000
         
     else:
+        sample_count = len(data)
+        epochs = FLAGS.max_epoch
+        warmup_epoch = int(0.2*epochs)
+        total_steps = int(epochs * sample_count / FLAGS.batch_size)
+        warmup_steps = int(warmup_epoch * sample_count / FLAGS.batch_size)
         
-        callbacks = [
-            ReduceLROnPlateau(verbose=1),
-            EarlyStopping(patience=3, verbose=1),
-            ModelCheckpoint('checkpoints/yolov3_train_{epoch}.tf',
-                            verbose=1, save_weights_only=True),
-            TensorBoard(log_dir='logs')
-        ]
+        warm_up_lr = utils.WarmUpCosineDecayScheduler(learning_rate_base=FLAGS.learning_rate,
+                                        total_steps=total_steps,
+                                        warmup_learning_rate=0.0,
+                                        warmup_steps=warmup_steps,
+                                        hold_base_rate_steps=0)
+        
+        callback = [
+            keras.callbacks.ModelCheckpoint(
+                "%s.h5"%save_weight_name, save_best_only=True, monitor="val_loss"
+            ),
+            keras.callbacks.ReduceLROnPlateau(
+                monitor="val_loss", factor=0.2, patience=20, min_lr=1e-9
+            ),
+            keras.callbacks.EarlyStopping(monitor="val_loss", patience=20, verbose=1),
+            warm_up_lr
+            ]
 
         start_time = time.time()
         history = model.fit(train_dataset,
-                            epochs=FLAGS.epochs,
+                            epochs=FLAGS.max_epoch,
                             callbacks=callbacks,
                             validation_data=val_dataset)
         end_time = time.time() - start_time
