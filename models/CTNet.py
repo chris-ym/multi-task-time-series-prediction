@@ -25,15 +25,15 @@ features=np.array(total_X_train_cb[0]).shape[2]
 
 def create_model(data_df, output_bias=None):
     
-    batch_size = data_df.get_shape()[0].value
-    time_steps = data_df.get_shape()[1].value  
-    features = data_df.get_shape()[2].value  
+    batch_size = data_df.shape[0].value
+    time_steps = data_df.shape[1].value  
+    features = data_df.shape[2].value  
 
     '''Initialize time and transformer layers'''    
     time_embedding = te.Time2Vector(time_steps)
     num_te=[]
     for i in range(num_trans_enc):
-        num_te.append(te.TransformerEncoder(d_k, d_v, ff_dim, n_heads, mask=look_ahead_mask, dropout=0.2))
+        num_te.append(te.TransformerEncoder(d_k-d_k, d_v=d_v, ff_dim=ff_dim, n_heads=n_heads, mask=look_ahead_mask, dropout=0.2))
     '''Construct model'''
     in_seq = Input(shape=(time_steps, features))
     x2 = time_embedding(in_seq)
