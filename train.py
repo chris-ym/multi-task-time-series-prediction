@@ -38,6 +38,11 @@ d_v = FLAGS.d_v
 ff_dim = FLAGS.ff_dim
 n_heads = FLAGS.n_heads
 
+if FLAGS.model == "RTNet":
+    model_weights = os.getcwd() + '\model_weights\best_RTNet_weights.h5'
+elif FLAGS.model == "CTNet":
+    model_weights = os.getcwd() + '\model_weights\best_cTNet_weights.h5'
+
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(BASE_DIR, 'models', FLAGS.model+'.py')
 LOG_DIR = FLAGS.log_dir
@@ -72,11 +77,12 @@ def log_string(out_str):
     LOG_FOUT.flush()
     print(out_str)
     
+###############    
 
 #### train function (version 2)####
 def train():
     with tf.Graph().as_default():
-        with tf.device('/gpu:'+str(GPU_INDEX)): 
+        with tf.device('/gpu:'+str(FLAGS.gpu)): 
             batch = tf.Variable(0)
             
 
