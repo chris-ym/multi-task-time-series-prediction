@@ -12,6 +12,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
 sys.path.append(os.path.join(BASE_DIR, 'utils'))
+import transformer_encoder
 import utils
 
 def str_to_bool(value):
@@ -28,7 +29,8 @@ parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU
 parser.add_argument('--model', default='RTNet', help='Model name: RTNet')
 parser.add_argument('--pretrained', type=str_to_bool, default=False, help='boolean value')
 parser.add_argument('--mode', default='training_mode', help='traing mode[default: training_mode]')
-parser.add_argument('--num_data', type=int, default='10', help='number of balanced data')
+parser.add_argument('--val_data', type=str_to_bool, default=False, help='boolean value')
+#parser.add_argument('--num_data', type=int, default='10', help='number of balanced data')
 parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
 parser.add_argument('--num_trans_enc', type=int, default=2, help='Number of transformer encoder [default: 2]')
 parser.add_argument('--max_epoch', type=int, default=50, help='Epoch to run [default: 50]')
@@ -112,11 +114,34 @@ def setup_model():
     
     return model, optimizer, loss
     
+#### shuffle function
+
+    
 #### train function (version 2)####
 def train():
     #### import training data and validatoin data(option)
-    
-    
+    data = pd.read_csv('.csv')
+    data = data.sample(frac=1).reset_index(drop=True)
+    ## shuffle training data
+    if FLAGS.model == 'RTNet':
+        data2 = pd.read_csv('.csv')
+        data2 = data2.sample(frac=1).reset_index(drop=True)
+       
+    if FLAGS.val_data == True:
+        val_data = pd.read_csv('.csv')
+        if FLAGS.model == 'RTNet':
+            val_data2 = pd.read_csv('.csv')
+        
+    else:
+        train_data, valid_data = train_test_split(data, test_size=0.2, random_state=42)    
+        
+        if FLAGS.model == 'RTNet':
+            temp = pd.concat([data, data2],axis=1)
+            train_temp, val_temp = train_test_split(temp, test_size=0.2, random_state=42)
+            train_data = train_temp.iloc[:, :len(data)]
+            train_data2 = train_temp.iloc[:, len(data):]            
+            val_data = val_temp.iloc[:, :len(val_data)]
+            val_data2 = val_temp.iloc[:, len(val_data):]
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
@@ -128,8 +153,12 @@ def train():
         for epoch in range(1, FLAGS.max_epoch + 1):
             for batch in len(data)//FLAGS.batch_size:
                 with tf.GradientTape() as tape:
-                    output1, output2 = model([data, data2], training=True)
-                    regularization_loss1, regularization_loss2= tf.reduce_sum(model.losses)
+                    if FLAGS.model == 'CTNet':
+                        output1, output2 = model(data, training=True)
+                    elif FLAGS.model == 'RTNet':
+                        output1, output2 = model([data, data2], training=True)
+                    regularization_loss1, regularization_loss2 = model.losses
+                    regularization_loss1, regularization_loss2 = tf.reduce_sum(regularization_loss1), tf.reduce_sum(regularization_loss2)
                     pred_loss = []
                     for output_1, output_2, label_1, label_2, loss1, loss2 in zip(output1, output2, label1, label2, loss[0], loss[1]):
                         pred_loss1.append(loss1(label_1, output_1))
