@@ -199,7 +199,7 @@ def train():
                                         warmup_steps=warmup_steps,
                                         hold_base_rate_steps=0)
         
-        callback = [
+        callbacks = [
             keras.callbacks.ModelCheckpoint(
                 "%s.h5"%model_weights, save_best_only=True, monitor="val_loss"
             ),
@@ -211,10 +211,23 @@ def train():
             ]
 
         start_time = time.time()
-        history = model.fit(train_dataset,
-                            epochs=FLAGS.max_epoch,
-                            callbacks=callbacks,
-                            validation_data=val_dataset)
+        if FLAGS.model == 'RTNet':
+            history = model.fit([train_data, train_data2],[, ],
+                                epochs = FLAGS.max_epoch,
+                                batch_size = FLAGS.batch_size,
+                                callbacks = callbacks,
+                                validation_data = ([val_data, val_data2], [, ])
+                               )
+        elif FLAGS.model == 'CTNet':
+            history = model.fit(train_data,[, ],
+                                epochs = FLAGS.max_epoch,
+                                batch_size = FLAGS.batch_size,
+                                callbacks = callbacks,
+                                validation_data = (val_data, [, ])
+                                )
+        else:
+            print("None of the 'RTNet' or 'CTNet' model!")
+        
         end_time = time.time() - start_time
         print(f'Total Training Time: {end_time}')
             
