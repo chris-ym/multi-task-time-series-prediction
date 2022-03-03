@@ -142,6 +142,19 @@ def train():
             train_data2 = train_temp.iloc[:, len(data):]            
             val_data = val_temp.iloc[:, :len(val_data)]
             val_data2 = val_temp.iloc[:, len(val_data):]
+            
+    #### exact target from data (Due to two-task training, so there were target data in the last two columns of the data)
+    if FLAGS.model == 'CTNet':
+        train_label1, train_label2 = train_data.iloc[:, -2:-1], train_data.iloc[:, -1:]
+        val_label1, val_label2 = val_data.iloc[:, -2:-1], val_data.iloc[:, -1:]
+    elif FLAGS.model == 'RTNet':
+        train_label1, train_label2 = train_data.iloc[:, -2:-1], train_data.iloc[:, -1:]
+        val_label1, val_label2 = val_data.iloc[:, -2:-1], val_data.iloc[:, -1:]
+        train_data = train_data.iloc[:, :-2]
+        train_data2 = train_data2.iloc[:, :-2]            
+        val_data = val_data.iloc[:, :-2]
+        val_data2 = val_data2.iloc[:, :-2]
+    
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
@@ -212,18 +225,18 @@ def train():
 
         start_time = time.time()
         if FLAGS.model == 'RTNet':
-            history = model.fit([train_data, train_data2],[, ],
+            history = model.fit([train_data, train_data2],[train_label1, train_label2],
                                 epochs = FLAGS.max_epoch,
                                 batch_size = FLAGS.batch_size,
                                 callbacks = callbacks,
-                                validation_data = ([val_data, val_data2], [, ])
+                                validation_data = ([val_data, val_data2], [val_label1, val_label2])
                                )
         elif FLAGS.model == 'CTNet':
-            history = model.fit(train_data,[, ],
+            history = model.fit(train_data,[train_label1, train_label2],
                                 epochs = FLAGS.max_epoch,
                                 batch_size = FLAGS.batch_size,
                                 callbacks = callbacks,
-                                validation_data = (val_data, [, ])
+                                validation_data = (val_data, [val_label1, val_label2])
                                 )
         else:
             print("None of the 'RTNet' or 'CTNet' model!")
