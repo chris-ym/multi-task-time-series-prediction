@@ -1,3 +1,14 @@
+def col_append(columns,num_dup):
+    '''
+    return all columns, all columns deleted categroical 
+    '''
+    for i in range(num_dup):
+        if i==0:
+            column=list(columns)
+        else:
+            column=column+list(map(lambda x: x+'_'+str(i),columns))
+    return column
+
 # country (group)  AQI (2 target)
 def next_time_pred(df,target=[],date):
     for lbl in target:
