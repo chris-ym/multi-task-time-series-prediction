@@ -1,7 +1,9 @@
 # country (group)  AQI (2 target)
-def next_time_pred(df,target,date):
-    df['new_target']=df.groupby(date)[target].shift(-1)
-    df=df.dropna(subset=['new_target'])
+def next_time_pred(df,target=[],date):
+    for lbl in target:
+        df[target[lbl]+'_new']=df.groupby(date)[target[lbl]].shift(-1)
+    #df=df.dropna(subset=['new_target'])
+    df=df.dropna()
     return df
   
 def time_series_trans(pid,date,new_target,features,time_length):
