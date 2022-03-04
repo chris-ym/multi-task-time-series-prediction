@@ -21,7 +21,7 @@ from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVec
 #features=np.array(total_X_train_cb[0]).shape[2]
 #################################################################################################
 
-def create_model(data_df, output_bias=None):
+def create_model(data_df, num_trans_enc, output_bias=None):
     
     batch_size = data_df.shape[0]
     time_steps = data_df.shape[1] 
