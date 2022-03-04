@@ -97,13 +97,15 @@ elif FLAGS.model == "CTNet":
     model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
     
 
+
+
 def setup_model(data, data2=None):
-    ####definition of model
-    look_ahead_mask = transformer_encoder.create_look_ahead_mask(seq_len)
+    #look_ahead_mask = transformer_encoder.create_look_ahead_mask(time_steps= data.shape[1])
+    
     if FLAGS.model == "RTNet":
-        model = MODEL.create_model(data, data2)
+        model = MODEL.create_model(data, data2, FLAGS.num_trans_enc)
     elif FLAGS.model == "CTNet":
-        model = MODEL.create_model(data)
+        model = MODEL.create_model(data, FLAGS.num_trans_enc)
     else:
         print("None of the constructed model!")
         
@@ -113,7 +115,7 @@ def setup_model(data, data2=None):
     
     model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
     
-    if Flags.pretrained == 'True':
+    if FLAGS.pretrained == 'True':
         model.load_weight(model_weights)
     
     return model, optimizer, loss
