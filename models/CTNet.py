@@ -23,9 +23,9 @@ from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVec
 
 def create_model(data_df, output_bias=None):
     
-    batch_size = data_df.shape[0].value
-    time_steps = data_df.shape[1].value  
-    features = data_df.shape[2].value  
+    batch_size = data_df.shape[0]
+    time_steps = data_df.shape[1] 
+    features = data_df.shape[2]
 
     '''Initialize time and transformer layers'''    
     time_embedding = te.Time2Vector(time_steps)
