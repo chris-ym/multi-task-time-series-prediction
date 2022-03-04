@@ -43,6 +43,7 @@ parser.add_argument('--loss2', default='mse', help='Loss2 [default: mse]')
 parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss weight [default: 2]')
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 ## transformer encoder default setting
+parser.add_argument('--time_steps', type=int, default=8, help='Number of time steps [default: 8]')
 parser.add_argument('--d_k', type=int, default=64, help='k value of self attenion [default: 64]')
 parser.add_argument('--d_v', type=int, default=64, help='v value of self attenion [default: 64]')
 parser.add_argument('--ff_dim', type=int, default=256, help='ffdim [default: 256]')
@@ -123,17 +124,17 @@ def setup_model(data, data2=None):
 #### train function (version 2)####
 def train():
     #### import training data and validatoin data(option)
-    data = pd.read_csv('.csv')
+    data = pd.read_csv('final_processed_partof.csv',index_col=[0])
     data = data.sample(frac=1).reset_index(drop=True)
     ## shuffle training data
     if FLAGS.model == 'RTNet':
-        data2 = pd.read_csv('.csv')
+        data2 = pd.read_csv('.csv',index_col=[0])
         data2 = data2.sample(frac=1).reset_index(drop=True)
        
     if FLAGS.val_data == True:
-        val_data = pd.read_csv('.csv')
+        val_data = pd.read_csv('.csv',index_col=[0])
         if FLAGS.model == 'RTNet':
-            val_data2 = pd.read_csv('.csv')
+            val_data2 = pd.read_csv('.csv',index_col=[0])
         
     else:
         train_data, val_data = train_test_split(data, test_size=0.2, random_state=42)    
@@ -150,19 +151,36 @@ def train():
     if FLAGS.model == 'CTNet':
         train_label1, train_label2 = train_data.iloc[:, -2:-1], train_data.iloc[:, -1:]
         val_label1, val_label2 = val_data.iloc[:, -2:-1], val_data.iloc[:, -1:]
+        print(len(train_data.columns))
+        train_data=np.dstack(np.split(train_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        train_data=np.moveaxis(train_data, 1, 2)        
+        val_data=np.dstack(np.split(val_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        val_data=np.moveaxis(val_data, 1, 2)            
+        
     elif FLAGS.model == 'RTNet':
         train_label1, train_label2 = train_data.iloc[:, -2:-1], train_data.iloc[:, -1:]
         val_label1, val_label2 = val_data.iloc[:, -2:-1], val_data.iloc[:, -1:]
-        train_data = train_data.iloc[:, :-2]
-        train_data2 = train_data2.iloc[:, :-2]            
-        val_data = val_data.iloc[:, :-2]
-        val_data2 = val_data2.iloc[:, :-2]
+        #train_data = train_data.iloc[:, :-2]
+        #train_data2 = train_data2.iloc[:, :-2]            
+        #val_data = val_data.iloc[:, :-2]
+        #val_data2 = val_data2.iloc[:, :-2]
+        
+        train_data=np.dstack(np.split(train_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        
+        train_data=np.moveaxis(train_data, 1, 2)  
+        train_data2=np.dstack(np.split(train_data2.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        train_data2=np.moveaxis(train_data2, 1, 2)  
+        
+        val_data=np.dstack(np.split(val_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        val_data=np.moveaxis(val_data, 1, 2)  
+        val_data2=np.dstack(np.split(val_data2.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        val_data2=np.moveaxis(val_data2, 1, 2)  
         
     # Constructing model    
     if FLAGS.model == 'CTNet':
         model, optimizer, loss = setup_model(data)
     if FLAGS.model == 'RTNet':
-        model, optimizer, loss = setup_model(data2)   
+        model, optimizer, loss = setup_model(data, data2)  
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
