@@ -16,8 +16,6 @@ from keras import optimizers
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
-
-adam = optimizers.Adam(lr=0.001)
 #################################################################################################
 #### merge all variable and training together
 features=np.array(total_X_train_cb[0]).shape[2]
@@ -53,7 +51,7 @@ def create_model(data_df, output_bias=None):
       
     model = Model(inputs=in_seq, outputs=[out1,out2])
 
-    #model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., 100.])
+    #model.compile(loss=['mse','binary_crossentropy'], optimizer=tf.keras.optimizers.Adam(FLAGS.learning_rate),metrics=['acc'],loss_weights=[ 1., 100.])
 
     return model 
 
