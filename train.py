@@ -281,13 +281,13 @@ def train():
                                         hold_base_rate_steps=0)
         
         callbacks = [
-            keras.callbacks.ModelCheckpoint(
+            tf.keras.callbacks.ModelCheckpoint(
                 "%s.h5"%model_weights, save_best_only=True, monitor="val_loss"
             ),
-            keras.callbacks.ReduceLROnPlateau(
+            tf.keras.callbacks.ReduceLROnPlateau(
                 monitor="val_loss", factor=0.2, patience=20, min_lr=1e-9
             ),
-            keras.callbacks.EarlyStopping(monitor="val_loss", patience=20, verbose=1),
+            tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=20, verbose=1),
             warm_up_lr
             ]
 
