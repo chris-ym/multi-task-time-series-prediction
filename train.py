@@ -37,8 +37,8 @@ parser.add_argument('--max_epoch', type=int, default=50, help='Epoch to run [def
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size during training [default: 64]')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='Initial learning rate [default: 0.001]')
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]') 
-parser.add_argument('--loss1', type=int, default='mse', help='Loss1 [default: 'mse']')
-parser.add_argument('--loss2', type=int, default='mse', help='Loss2 [default: 'mse']')
+parser.add_argument('--loss1', default='mse', help='Loss1 [default: mse]')
+parser.add_argument('--loss2', default='mse', help='Loss2 [default: mse]')
 parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss weight [default: 2]')
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 ## transformer encoder default setting
@@ -77,7 +77,7 @@ def get_data(data_name):
         data=pickle.load(f)
         f.close()
     else:
-        
+        print("the data file can't be processed!")
     return data
 #######################################################
     
