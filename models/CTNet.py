@@ -31,7 +31,7 @@ def create_model(data_df, num_trans_enc, output_bias=None):
     time_embedding = te.Time2Vector(time_steps)
     num_te=[]
     for i in range(num_trans_enc):
-        num_te.append(te.TransformerEncoder(d_k-d_k, d_v=d_v, ff_dim=ff_dim, n_heads=n_heads, mask=look_ahead_mask, dropout=0.2))
+        num_te.append(te.TransformerEncoder(d_k=d_k, d_v=d_v, ff_dim=ff_dim, n_heads=n_heads, mask=look_ahead_mask, dropout=0.2))
     '''Construct model'''
     in_seq = Input(shape=(time_steps, features))
     x2 = time_embedding(in_seq)
