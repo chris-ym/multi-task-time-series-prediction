@@ -19,8 +19,8 @@ from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVec
 
 #adam = optimizers.Adam(lr=0.001)
 #########################################################################################################
-features=np.array(total_X_train_time[0]).shape[2]
-risk_features=np.array(total_X_train_risk[0]).shape[2]
+#features=np.array(total_X_train_time[0]).shape[2]
+#risk_features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
 def create_model(data_invariant, data_time, output_bias=None):
