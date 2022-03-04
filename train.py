@@ -26,7 +26,7 @@ def str_to_bool(value):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
-parser.add_argument('--model', default='RTNet', help='Model name: RTNet')
+parser.add_argument('--model', default='RTNet', help='Model name: CTNet')
 parser.add_argument('--pretrained', type=str_to_bool, default=False, help='boolean value')
 parser.add_argument('--mode', default='training_mode', help='traing mode[default: training_mode]')
 parser.add_argument('--val_data', type=str_to_bool, default=False, help='boolean value')
@@ -37,7 +37,9 @@ parser.add_argument('--max_epoch', type=int, default=50, help='Epoch to run [def
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size during training [default: 64]')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='Initial learning rate [default: 0.001]')
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]') 
-parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss weight [default: 100]')
+parser.add_argument('--loss1', type=int, default='mse', help='Loss1 [default: 'mse']')
+parser.add_argument('--loss2', type=int, default='mse', help='Loss2 [default: 'mse']')
+parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss weight [default: 2]')
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 ## transformer encoder default setting
 parser.add_argument('--d_k', type=int, default=64, help='k value of self attenion [default: 64]')
@@ -105,7 +107,7 @@ def setup_model():
         
     ##set loss weight
     optimizer = tf.keras.optimizers.Adam(lr=FLAGS.learning_rate)
-    loss = ['mse','binary_crossentropy']
+    loss = [FLAGS.loss1, FLAGS.loss2]
     
     model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
     
@@ -164,12 +166,12 @@ def train():
         avg_val_loss2 = tf.keras.metrics.Mean('val_loss', dtype=tf.float32)
         
         for epoch in range(1, FLAGS.max_epoch + 1):
-            for batch in len(data)//FLAGS.batch_size:
+            for batch in len(train_data)//FLAGS.batch_size:
                 with tf.GradientTape() as tape:
                     if FLAGS.model == 'CTNet':
-                        output1, output2 = model(data, training=True)
+                        output1, output2 = model(train_data, training=True)
                     elif FLAGS.model == 'RTNet':
-                        output1, output2 = model([data, data2], training=True)
+                        output1, output2 = model([train_data, train_data2], training=True)
                     regularization_loss1, regularization_loss2 = model.losses
                     regularization_loss1, regularization_loss2 = tf.reduce_sum(regularization_loss1), tf.reduce_sum(regularization_loss2)
                     pred_loss = []
@@ -197,6 +199,46 @@ def train():
                     epoch, batch, total_loss1 .numpy(),
                     list(map(lambda x: np.sum(x.numpy()), pred_loss1))))
                 avg_loss2.update_state(total_loss1) 
+                
+                ## validation dataset
+                if FLAGS.model == 'CTNet':
+                    output1, output2 = model(val_data)
+                elif FLAGS.model == 'RTNet':
+                    output1, output2 = model([val_data, val_data2])
+                regularization_loss1, regularization_loss2 = model.losses
+                regularization_loss1, regularization_loss2 = tf.reduce_sum(regularization_loss1), tf.reduce_sum(regularization_loss2)
+                pred_loss = []
+                for output_1, output_2, label_1, label_2, loss1, loss2 in zip(output1, output2, label1, label2, loss[0], loss[1]):
+                    pred_loss1.append(loss1(label_1, output_1))
+                    pred_loss2.append(loss2(label_2, output_2))
+                total_loss1 = tf.reduce_sum(pred_loss1) + regularization_loss1
+                total_loss2 = tf.reduce_sum(pred_loss2) + regularization_loss2
+                
+                logging.info("{}_train_loss1_{}, {}, {}".format(
+                    epoch, batch, total_loss1 .numpy(),
+                    list(map(lambda x: np.sum(x.numpy()), pred_loss1))))
+                avg_val_loss1.update_state(total_loss1) 
+                
+                logging.info("{}_train_loss1_{}, {}, {}".format(
+                    epoch, batch, total_loss2 .numpy(),
+                    list(map(lambda x: np.sum(x.numpy()), pred_loss2))))
+                avg_val_loss2.update_state(total_loss2) 
+                
+            # print result     
+            logging.info("{}, train loss 1: {}, train loss 2: {}, val loss 1: {}, val loss 2: {}".format(
+                epoch,
+                avg_loss1.result().numpy(),
+                avg_loss2.result().numpy(),
+                avg_val_loss1.result().numpy(),
+                avg_val_loss2.result().numpy())
+
+            avg_loss1.reset_states()
+            avg_loss2.reset_states()
+            avg_val_loss1.reset_states()
+            avg_val_loss2.reset_states()
+            model.save_weights(
+                'checkpoints/train_{}.tf'.format(epoch))
+
     '''
         
     else:
