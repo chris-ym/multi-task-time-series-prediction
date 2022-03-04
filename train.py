@@ -93,10 +93,12 @@ def log_string(out_str):
 ####load model weight
 
 if FLAGS.model == "RTNet":
-    model_weights = os.getcwd() + '\model_weights\best_RTNet_weights.h5'   
+    model_weights = os.path.join(BASE_DIR, 'model_weight','best_RTNet_weights.h5')   
 elif FLAGS.model == "CTNet":
-    model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
+    model_weights = os.path.join(BASE_DIR, 'model_weight','best_CTNet_weights.h5')
     
+
+
 
 
 
@@ -114,7 +116,9 @@ def setup_model(data, data2=None):
     optimizer = tf.keras.optimizers.Adam(lr=FLAGS.learning_rate)
     loss = [FLAGS.loss1, FLAGS.loss2]
     
-    model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
+    model.compile(loss=loss, optimizer=optimizer,metrics=[utils.r2_score],loss_weights=[ 1., FLAGS.loss_weight])
+    #model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
+    
     
     if FLAGS.pretrained == 'True':
         model.load_weight(model_weights)
@@ -126,6 +130,7 @@ def setup_model(data, data2=None):
     
 #### train function (version 2)####
 def train():
+    print(BASE_DIR)
     #### import training data and validatoin data(option)
     data = pd.read_csv('final_processed_partof.csv',index_col=[0])
     data = data.sample(frac=1).reset_index(drop=True)
@@ -188,7 +193,8 @@ def train():
     if FLAGS.model == 'CTNet':
         model, optimizer, loss = setup_model(train_data)
     if FLAGS.model == 'RTNet':
-        model, optimizer, loss = setup_model(train_data, train_data2)  
+        model, optimizer, loss = setup_model(train_data, train_data2) 
+    
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
@@ -273,50 +279,50 @@ def train():
 
     '''
         
-    else:
-        sample_count = len(data)
-        epochs = FLAGS.max_epoch
-        warmup_epoch = int(0.2*epochs)
-        total_steps = int(epochs * sample_count / FLAGS.batch_size)
-        warmup_steps = int(warmup_epoch * sample_count / FLAGS.batch_size)
-        
-        warm_up_lr = utils.WarmUpCosineDecayScheduler(learning_rate_base=FLAGS.learning_rate,
-                                        total_steps=total_steps,
-                                        warmup_learning_rate=0.0,
-                                        warmup_steps=warmup_steps,
-                                        hold_base_rate_steps=0)
-        
-        callbacks = [
-            tf.keras.callbacks.ModelCheckpoint(
-                "%s.h5"%model_weights, save_best_only=True, monitor="val_loss"
-            ),
-            tf.keras.callbacks.ReduceLROnPlateau(
-                monitor="val_loss", factor=0.2, patience=20, min_lr=1e-9
-            ),
-            tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=20, verbose=1),
-            warm_up_lr
-            ]
+    
+    sample_count = len(data)
+    epochs = FLAGS.max_epoch
+    warmup_epoch = int(0.2*epochs)
+    total_steps = int(epochs * sample_count / FLAGS.batch_size)
+    warmup_steps = int(warmup_epoch * sample_count / FLAGS.batch_size)
 
-        start_time = time.time()
-        if FLAGS.model == 'RTNet':
-            history = model.fit([train_data, train_data2],[train_label1, train_label2],
-                                epochs = FLAGS.max_epoch,
-                                batch_size = FLAGS.batch_size,
-                                callbacks = callbacks,
-                                validation_data = ([val_data, val_data2], [val_label1, val_label2])
-                               )
-        elif FLAGS.model == 'CTNet':
-            history = model.fit(train_data,[train_label1, train_label2],
-                                epochs = FLAGS.max_epoch,
-                                batch_size = FLAGS.batch_size,
-                                callbacks = callbacks,
-                                validation_data = (val_data, [val_label1, val_label2])
-                                )
-        else:
-            print("None of the 'RTNet' or 'CTNet' model!")
-        
-        end_time = time.time() - start_time
-        print(f'Total Training Time: {end_time}')
+    warm_up_lr = utils.WarmUpCosineDecayScheduler(learning_rate_base=FLAGS.learning_rate,
+                                    total_steps=total_steps,
+                                    warmup_learning_rate=0.0,
+                                    warmup_steps=warmup_steps,
+                                    hold_base_rate_steps=0)
+
+    callbacks = [
+        tf.keras.callbacks.ModelCheckpoint(
+            "%s"%model_weights, save_best_only=True, monitor="val_loss"
+        ),
+        tf.keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss", factor=0.2, patience=20, min_lr=1e-9
+        ),
+        tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=20, verbose=1),
+        warm_up_lr
+        ]
+
+    start_time = time.time()
+    if FLAGS.model == 'RTNet':
+        history = model.fit([train_data, train_data2],[train_label1, train_label2],
+                            epochs = FLAGS.max_epoch,
+                            batch_size = FLAGS.batch_size,
+                            callbacks = callbacks,
+                            validation_data = ([val_data, val_data2], [val_label1, val_label2])
+                           )
+    elif FLAGS.model == 'CTNet':
+        history = model.fit(train_data,[train_label1, train_label2],
+                            epochs = FLAGS.max_epoch,
+                            batch_size = FLAGS.batch_size,
+                            callbacks = callbacks,
+                            validation_data = (val_data, [val_label1, val_label2])
+                            )
+    else:
+        print("None of the 'RTNet' or 'CTNet' model!")
+
+    end_time = time.time() - start_time
+    print(f'Total Training Time: {end_time}')
             
 
 #########################
