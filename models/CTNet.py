@@ -51,7 +51,7 @@ def create_model(data_df, output_bias=None):
       
     model = Model(inputs=in_seq, outputs=[out1,out2])
 
-    #model.compile(loss=['mse','binary_crossentropy'], optimizer=tf.keras.optimizers.Adam(FLAGS.learning_rate),metrics=['acc'],loss_weights=[ 1., 100.])
+    #model.compile(loss=['mse','binary_crossentropy'], optimizer=adam,metrics=['acc'],loss_weights=[ 1., 100.])
 
     return model 
 
