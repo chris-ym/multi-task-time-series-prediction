@@ -41,7 +41,8 @@ parser.add_argument('--learning_rate', type=float, default=0.001, help='Initial 
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]') 
 parser.add_argument('--loss1', default='mse', help='Loss1 [default: mse]')
 parser.add_argument('--loss2', default='mse', help='Loss2 [default: mse]')
-parser.add_argument('--loss_weight', type=int, default=1, help='Initial loss weight [default: 2]')
+parser.add_argument('--loss_weight1', type=float, default=1.0, help='Initial loss weight [default: 1.0]')
+parser.add_argument('--loss_weight2', type=float, default=2.0, help='Initial loss weight [default: 2.0]')
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 ## transformer encoder default setting
 parser.add_argument('--time_steps', type=int, default=8, help='Number of time steps [default: 8]')
@@ -116,7 +117,7 @@ def setup_model(data, data2=None):
     optimizer = tf.keras.optimizers.Adam(lr=FLAGS.learning_rate)
     loss = [FLAGS.loss1, FLAGS.loss2]
     
-    model.compile(loss=loss, optimizer=optimizer,metrics=[utils.r2_score],loss_weights=[ 1., FLAGS.loss_weight])
+    model.compile(loss=loss, optimizer=optimizer,metrics=[utils.r2_score],loss_weights=[ FLAGS.loss_weight1, FLAGS.loss_weight2])
     #model.compile(loss=loss, optimizer=optimizer,metrics=['acc'],loss_weights=[ 1., FLAGS.loss_weight])
     
     
@@ -132,7 +133,7 @@ def setup_model(data, data2=None):
 def train():
     print(BASE_DIR)
     #### import training data and validatoin data(option)
-    data = pd.read_csv('final_processed_partof.csv',index_col=[0])
+    data = pd.read_csv('final_processed_pollution_O3_CO.csv',index_col=[0])
     data = data.sample(frac=1).reset_index(drop=True)
 
     #data.select_dtypes(exclude=['object'])
