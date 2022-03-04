@@ -1,25 +1,30 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-
 import numpy as np
 import pandas as pd
 import os
 import pickle
 import tensorflow as tf
-
+import tensorflow.keras.backend as K
 ### tf.to_int64 (TF1.X) --> tf.compat.v1.to_int64 (TF2.X)
 #def cal_rsquared(label, pred, loss):
   #unexplained_loss = tf.reduce_sum(tf.square(tf.subtract(tf.compat.v1.to_int64(label),pred)))
   #r_2 = tf.subtract(1, tf.divide(unexplained_loss,tf.reduce_sum(loss)))  
   #return r_2
   
+
 def cal_rsquared(label, pred):
     
     residual = tf.reduce_sum(tf.square(tf.subtract(label,pred)))
     total = tf.reduce_sum(tf.square(tf.subtract(label, tf.reduce_mean(label))))
     r2 = tf.subtract(1.0, tf.divide(residual, total))
     return r2
+
+def r2_score(y_true, y_pred):
+    SS_res =  K.sum(K.square(y_true - y_pred)) 
+    SS_tot = K.sum(K.square(y_true - K.mean(y_true))) 
+    return ( 1 - SS_res/(SS_tot + K.epsilon()) )
 
 def shuffle_data(data, labels):
   """ Shuffle data and labels.
