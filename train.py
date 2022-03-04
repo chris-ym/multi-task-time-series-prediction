@@ -129,6 +129,11 @@ def train():
     #### import training data and validatoin data(option)
     data = pd.read_csv('final_processed_partof.csv',index_col=[0])
     data = data.sample(frac=1).reset_index(drop=True)
+
+    #data.select_dtypes(exclude=['object'])
+    ## excluded data which don't belong to  features
+    train_feature=[s for s in data.columns if 'County' not in s and 'City' not in s and 'Site Num' not in s and 'Date Local' not in s]
+    
     ## shuffle training data
     if FLAGS.model == 'RTNet':
         data2 = pd.read_csv('.csv',index_col=[0])
@@ -152,38 +157,38 @@ def train():
             
     #### exact target from data (Due to two-task training, so there were target data in the last two columns of the data)
     if FLAGS.model == 'CTNet':
-        train_label1, train_label2 = train_data.iloc[:, -2:-1], train_data.iloc[:, -1:]
-        val_label1, val_label2 = val_data.iloc[:, -2:-1], val_data.iloc[:, -1:]
+        train_label1, train_label2 = tf.convert_to_tensor(train_data.iloc[:, -2:-1]), tf.convert_to_tensor(train_data.iloc[:, -1:])
+        val_label1, val_label2 = tf.convert_to_tensor(val_data.iloc[:, -2:-1]), tf.convert_to_tensor(val_data.iloc[:, -1:])
         print(len(train_data.columns))
-        train_data=np.dstack(np.split(train_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
-        train_data=np.moveaxis(train_data, 1, 2)        
-        val_data=np.dstack(np.split(val_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
-        val_data=np.moveaxis(val_data, 1, 2)            
+        train_data=np.dstack(np.split(train_data.iloc[:,:-2][train_feature].values, FLAGS.time_steps, axis = 1))
+        train_data=tf.convert_to_tensor(np.moveaxis(train_data, 1, 2))       
+        val_data=np.dstack(np.split(val_data.iloc[:,:-2][train_feature].values, FLAGS.time_steps, axis = 1))
+        val_data=tf.convert_to_tensor(np.moveaxis(val_data, 1, 2))         
         
     elif FLAGS.model == 'RTNet':
-        train_label1, train_label2 = train_data.iloc[:, -2:-1], train_data.iloc[:, -1:]
-        val_label1, val_label2 = val_data.iloc[:, -2:-1], val_data.iloc[:, -1:]
+        train_label1, train_label2 = tf.convert_to_tensor(train_data.iloc[:, -2:-1]), tf.convert_to_tensor(train_data.iloc[:, -1:])
+        val_label1, val_label2 = tf.convert_to_tensor(val_data.iloc[:, -2:-1]), tf.convert_to_tensor(val_data.iloc[:, -1:])
         #train_data = train_data.iloc[:, :-2]
         #train_data2 = train_data2.iloc[:, :-2]            
         #val_data = val_data.iloc[:, :-2]
         #val_data2 = val_data2.iloc[:, :-2]
         
-        train_data=np.dstack(np.split(train_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
+        # filtered Identification columns
+        train_data=np.dstack(np.split(train_data.iloc[:,:-2][train_feature].values, FLAGS.time_steps, axis = 1))
+        train_data=tf.convert_to_tensor(np.moveaxis(train_data, 1, 2))
+        train_data2=np.dstack(np.split(train_data2.iloc[:,:-2][train_feature].values, FLAGS.time_steps, axis = 1))
+        train_data2=tf.convert_to_tensor(np.moveaxis(train_data2, 1, 2)) 
         
-        train_data=np.moveaxis(train_data, 1, 2)  
-        train_data2=np.dstack(np.split(train_data2.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
-        train_data2=np.moveaxis(train_data2, 1, 2)  
-        
-        val_data=np.dstack(np.split(val_data.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
-        val_data=np.moveaxis(val_data, 1, 2)  
-        val_data2=np.dstack(np.split(val_data2.iloc[:,:-2].values, FLAGS.time_steps, axis = 1))
-        val_data2=np.moveaxis(val_data2, 1, 2)  
+        val_data=np.dstack(np.split(val_data.iloc[:,:-2][train_feature].values, FLAGS.time_steps, axis = 1))
+        val_data=tf.convert_to_tensor(np.moveaxis(val_data, 1, 2)) 
+        val_data2=np.dstack(np.split(val_data2.iloc[:,:-2][train_feature].values, FLAGS.time_steps, axis = 1))
+        val_data2=tf.convert_to_tensor(np.moveaxis(val_data2, 1, 2)) 
         
     # Constructing model    
     if FLAGS.model == 'CTNet':
-        model, optimizer, loss = setup_model(data)
+        model, optimizer, loss = setup_model(train_data)
     if FLAGS.model == 'RTNet':
-        model, optimizer, loss = setup_model(data, data2)  
+        model, optimizer, loss = setup_model(train_data, train_data2)  
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
