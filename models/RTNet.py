@@ -17,7 +17,7 @@ from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
 
-adam = optimizers.Adam(lr=0.001)
+#adam = optimizers.Adam(lr=0.001)
 #########################################################################################################
 features=np.array(total_X_train_time[0]).shape[2]
 risk_features=np.array(total_X_train_risk[0]).shape[2]
