@@ -23,7 +23,7 @@ from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVec
 #risk_features=np.array(total_X_train_risk[0]).shape[2]
 ##########################################################################################################
 
-def create_model(data_invariant, data_time, num_trans_enc, output_bias=None):
+def create_model(data_invariant, data_time, num_trans_enc, d_k=64, d_v=64, ff_dim=256, n_heads=2, output_bias=None):
   batch_size = data_invariant.shape[0]
   time_steps = data_invariant.shape[1] 
   inv_features = data_invariant.shape[2]
