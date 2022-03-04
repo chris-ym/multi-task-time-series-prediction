@@ -96,13 +96,13 @@ elif FLAGS.model == "CTNet":
     model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
     
 
-def setup_model():
+def setup_model(data, data2=None):
     ####definition of model
     look_ahead_mask = transformer_encoder.create_look_ahead_mask(seq_len)
     if FLAGS.model == "RTNet":
-        model = create_model(data, data2)
+        model = MODEL.create_model(data, data2)
     elif FLAGS.model == "CTNet":
-        model = create_model(data)
+        model = MODEL.create_model(data)
     else:
         print("None of the constructed model!")
         
@@ -159,8 +159,10 @@ def train():
         val_data2 = val_data2.iloc[:, :-2]
         
     # Constructing model    
-    model, optimizer, loss = setup_model()
-    
+    if FLAGS.model == 'CTNet':
+        model, optimizer, loss = setup_model(data)
+    if FLAGS.model == 'RTNet':
+        model, optimizer, loss = setup_model(data2)   
     '''
     #### eager mode
     if FLAGS.mode == "eager_mode":
