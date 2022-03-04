@@ -18,7 +18,7 @@ from tensorflow.keras.layers import *
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
 #################################################################################################
 #### merge all variable and training together
-features=np.array(total_X_train_cb[0]).shape[2]
+#features=np.array(total_X_train_cb[0]).shape[2]
 #################################################################################################
 
 def create_model(data_df, output_bias=None):
