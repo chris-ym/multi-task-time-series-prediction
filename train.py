@@ -132,7 +132,7 @@ def train():
 
     #data.select_dtypes(exclude=['object'])
     ## excluded data which don't belong to  features
-    train_feature=[s for s in data.columns if 'County' not in s and 'City' not in s and 'Site Num' not in s and 'Date Local' not in s]
+    train_feature=[s for s in data.columns if 'County' not in s and 'City' not in s and 'Site Num' not in s and 'Date Local' not in s and '_new' not in s]
     
     ## shuffle training data
     if FLAGS.model == 'RTNet':
