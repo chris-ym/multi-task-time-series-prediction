@@ -156,6 +156,9 @@ def train():
         train_data2 = train_data2.iloc[:, :-2]            
         val_data = val_data.iloc[:, :-2]
         val_data2 = val_data2.iloc[:, :-2]
+        
+    # Constructing model    
+    model, optimizer, loss = setup_model()
     
     '''
     #### eager mode
