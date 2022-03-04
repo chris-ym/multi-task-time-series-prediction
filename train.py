@@ -7,6 +7,7 @@ import socket
 import importlib
 import os
 import sys
+from sklearn.model_selection import train_test_split
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -26,7 +27,7 @@ def str_to_bool(value):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
-parser.add_argument('--model', default='RTNet', help='Model name: CTNet')
+parser.add_argument('--model', default='CTNet', help='Model name: CTNet')
 parser.add_argument('--pretrained', type=str_to_bool, default=False, help='boolean value')
 parser.add_argument('--mode', default='training_mode', help='traing mode[default: training_mode]')
 parser.add_argument('--val_data', type=str_to_bool, default=False, help='boolean value')
@@ -58,8 +59,8 @@ MODEL_FILE = os.path.join(BASE_DIR, 'models', FLAGS.model+'.py')
 LOG_DIR = FLAGS.log_dir
 if not os.path.exists(LOG_DIR): 
     os.mkdir(LOG_DIR)
-os.system('cp %s %s' % (MODEL_FILE, LOG_DIR)) # backup of model definition
-os.system('cp train.py %s' % (LOG_DIR)) # backup of train process
+#os.system('cp %s %s' % (MODEL_FILE, LOG_DIR)) # backup of model definition
+#os.system('cp train.py %s' % (LOG_DIR)) # backup of train process
 LOG_FOUT = open(os.path.join(LOG_DIR, 'log_train.txt'), 'w')
 LOG_FOUT.write(str(FLAGS)+'\n')
 
@@ -94,10 +95,10 @@ if FLAGS.model == "RTNet":
 elif FLAGS.model == "CTNet":
     model_weights = os.getcwd() + '\model_weights\best_CTNet_weights.h5'
     
-####definition of model
-look_ahead_mask = transformer_encoder.create_look_ahead_mask(seq_len)
 
 def setup_model():
+    ####definition of model
+    look_ahead_mask = transformer_encoder.create_look_ahead_mask(seq_len)
     if FLAGS.model == "RTNet":
         model = create_model(data, data2)
     elif FLAGS.model == "CTNet":
@@ -135,7 +136,7 @@ def train():
             val_data2 = pd.read_csv('.csv')
         
     else:
-        train_data, valid_data = train_test_split(data, test_size=0.2, random_state=42)    
+        train_data, val_data = train_test_split(data, test_size=0.2, random_state=42)    
         
         if FLAGS.model == 'RTNet':
             temp = pd.concat([data, data2],axis=1)
