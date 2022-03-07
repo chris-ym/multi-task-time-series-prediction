@@ -6,8 +6,8 @@
 ## Overview
 Below is the work flow for [RTNet](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/models/RTNet.py) & [CTNet](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/models/CTNet.py):
 
-1. CTNet:
+1. **CTNet**:
 ![image](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/utils/pictures/CTNet_workflow.png)
 
-2. RTNet
+2. **RTNet**:
 ![image](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/utils/pictures/RTNet_workflow.png)
