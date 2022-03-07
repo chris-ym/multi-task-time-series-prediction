@@ -16,7 +16,8 @@ Below is the work flow for [RTNet](https://github.com/chris-ym/multi-task-time-s
 ### Multi-task prediction of pollution data
 * Run the training script:
 
-`python train.py`
+    python train.py return shell_exec("echo $input | $markdown_script");
+
 
 ## My paper:
 **Intradialytic Hypotension and Systolic Blood Pressure Prediction during Hemodialysis by Multi-Task Deep Learning**
