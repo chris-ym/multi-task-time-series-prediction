@@ -11,3 +11,7 @@ Below is the work flow for [RTNet](https://github.com/chris-ym/multi-task-time-s
 
 2. **RTNet**:
 ![image](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/utils/pictures/RTNet_workflow.png)
+
+## My paper:
+**Intradialytic Hypotension and Systolic Blood Pressure Prediction during Hemodialysis by Multi-Task Deep Learning**
+
