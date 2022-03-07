@@ -12,11 +12,14 @@ Below is the work flow for [RTNet](https://github.com/chris-ym/multi-task-time-s
 2. **RTNet**:
 ![image](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/utils/pictures/RTNet_workflow.png)
 
-## Implementation(Tensorflow):
+## Implementation (Tensorflow):
 ### Multi-task prediction of pollution data
 * Run the training script:
 
     > python train.py
+   
+* Final training result in terminal:
+![image](https://github.com/chris-ym/multi-task-time-series-prediction/blob/main/utils/pictures/pollution_train_result.jpg)
 
 
 ## My paper:
