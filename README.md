@@ -16,7 +16,7 @@ Below is the work flow for [RTNet](https://github.com/chris-ym/multi-task-time-s
 ### Multi-task prediction of pollution data
 * Run the training script:
 
-    python train.py return shell_exec("echo $input | $markdown_script");
+    python train.pyreturn shell_exec("echo $input | $markdown_script");
 
 
 ## My paper:
